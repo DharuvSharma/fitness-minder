@@ -6,7 +6,7 @@ import { Target, CheckCircle, Circle } from 'lucide-react';
 export type GoalStatus = 'in-progress' | 'completed' | 'not-started';
 export type GoalType = 'weight' | 'strength' | 'endurance' | 'habit' | 'custom';
 
-export interface GoalCardProps {
+export interface GoalCardProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   title: string;
   description: string;
@@ -17,6 +17,7 @@ export interface GoalCardProps {
   deadline?: string;
   progress?: number; // 0-100
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const statusIcons: Record<GoalStatus, React.ReactNode> = {
@@ -51,6 +52,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
   deadline,
   progress = 0,
   className,
+  style,
+  ...props
 }) => {
   const formattedDeadline = deadline 
     ? new Date(deadline).toLocaleDateString('en-US', {
@@ -65,6 +68,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
         "glass-card rounded-2xl p-5 hover-lift",
         className
       )}
+      style={style}
+      {...props}
     >
       <div className="flex items-start justify-between mb-4">
         <div>

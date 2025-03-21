@@ -5,7 +5,7 @@ import { Clock, Flame, Activity, ChevronRight } from 'lucide-react';
 
 export type WorkoutType = 'strength' | 'cardio' | 'flexibility' | 'hiit';
 
-export interface WorkoutCardProps {
+export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   title: string;
   type: WorkoutType;
@@ -15,6 +15,7 @@ export interface WorkoutCardProps {
   date: string;
   completed?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const typeColors: Record<WorkoutType, string> = {
@@ -40,6 +41,8 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   date,
   completed = false,
   className,
+  style,
+  ...props
 }) => {
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     month: 'short',
@@ -52,6 +55,8 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
         "glass-card relative overflow-hidden rounded-2xl p-5 hover-lift",
         className
       )}
+      style={style}
+      {...props}
     >
       {completed && (
         <div className="absolute top-3 right-3">
