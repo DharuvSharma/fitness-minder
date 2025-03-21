@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dumbbell, Target, BarChart2, Plus, Calendar } from 'lucide-react';
 import WorkoutCard, { WorkoutType } from '@/components/WorkoutCard';
-import GoalCard, { GoalType } from '@/components/GoalCard';
+import GoalCard, { GoalType, GoalStatus } from '@/components/GoalCard';
 import ProgressChart from '@/components/ProgressChart';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -52,7 +52,7 @@ const goals = [
     target: '70 kg',
     current: '75 kg',
     type: 'weight' as GoalType,
-    status: 'in-progress',
+    status: 'in-progress' as GoalStatus,
     deadline: '2023-09-01',
     progress: 50,
   },
@@ -63,7 +63,7 @@ const goals = [
     target: '10 km',
     current: '7 km',
     type: 'endurance' as GoalType,
-    status: 'in-progress',
+    status: 'in-progress' as GoalStatus,
     deadline: '2023-07-15',
     progress: 70,
   },
