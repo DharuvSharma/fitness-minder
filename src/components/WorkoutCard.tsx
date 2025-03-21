@@ -33,6 +33,7 @@ const typeLabels: Record<WorkoutType, string> = {
 };
 
 const WorkoutCard: React.FC<WorkoutCardProps> = ({
+  id,
   title,
   type,
   duration,
@@ -42,6 +43,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   completed = false,
   className,
   style,
+  onClick,
   ...props
 }) => {
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
@@ -52,10 +54,11 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   return (
     <div 
       className={cn(
-        "glass-card relative overflow-hidden rounded-2xl p-5 hover-lift",
+        "glass-card relative overflow-hidden rounded-2xl p-5 hover-lift cursor-pointer",
         className
       )}
       style={style}
+      onClick={onClick}
       {...props}
     >
       {completed && (
@@ -105,7 +108,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
       
       <div className="flex justify-end">
         <button className="flex items-center text-xs font-medium text-fitness-accent transition-colors hover:text-fitness-black">
-          <span>View Details</span>
+          <span>{completed ? "View Details" : "Start Workout"}</span>
           <ChevronRight className="w-4 h-4 ml-1" />
         </button>
       </div>

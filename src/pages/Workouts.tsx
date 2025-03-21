@@ -1,98 +1,26 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
 import WorkoutCard, { WorkoutType } from '@/components/WorkoutCard';
+import AddWorkoutForm from '@/components/AddWorkoutForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/Navbar';
-
-// Mock data for workouts
-const workouts = [
-  {
-    id: '1',
-    title: 'Upper Body Strength',
-    type: 'strength' as WorkoutType,
-    duration: 45,
-    calories: 320,
-    exercises: 8,
-    date: '2023-06-10',
-    completed: true,
-  },
-  {
-    id: '2',
-    title: '5K Morning Run',
-    type: 'cardio' as WorkoutType,
-    duration: 28,
-    calories: 250,
-    exercises: 1,
-    date: '2023-06-08',
-    completed: true,
-  },
-  {
-    id: '3',
-    title: 'HIIT Circuit',
-    type: 'hiit' as WorkoutType,
-    duration: 30,
-    calories: 400,
-    exercises: 6,
-    date: '2023-06-12',
-    completed: false,
-  },
-  {
-    id: '4',
-    title: 'Lower Body Focus',
-    type: 'strength' as WorkoutType,
-    duration: 50,
-    calories: 380,
-    exercises: 7,
-    date: '2023-06-05',
-    completed: true,
-  },
-  {
-    id: '5',
-    title: 'Yoga and Stretching',
-    type: 'flexibility' as WorkoutType,
-    duration: 35,
-    calories: 150,
-    exercises: 12,
-    date: '2023-06-07',
-    completed: true,
-  },
-  {
-    id: '6',
-    title: 'Outdoor Cycling',
-    type: 'cardio' as WorkoutType,
-    duration: 60,
-    calories: 450,
-    exercises: 1,
-    date: '2023-06-04',
-    completed: true,
-  },
-  {
-    id: '7',
-    title: 'Full Body Workout',
-    type: 'strength' as WorkoutType,
-    duration: 55,
-    calories: 420,
-    exercises: 10,
-    date: '2023-06-01',
-    completed: true,
-  },
-  {
-    id: '8',
-    title: 'Sprint Intervals',
-    type: 'hiit' as WorkoutType,
-    duration: 25,
-    calories: 320,
-    exercises: 4,
-    date: '2023-06-14',
-    completed: false,
-  },
-];
+import { workoutService, Workout } from '@/services/workoutService';
+import { useToast } from '@/hooks/use-toast';
 
 const Workouts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
+  const { toast } = useToast();
+
+  // Load workouts on component mount
+  useEffect(() => {
+    const loadedWorkouts = workoutService.getWorkouts();
+    setWorkouts(loadedWorkouts);
+  }, []);
 
   // Filter workouts based on search term
   const filteredWorkouts = workouts.filter(workout => 
@@ -102,6 +30,33 @@ const Workouts: React.FC = () => {
   // Group workouts by upcoming and completed
   const upcomingWorkouts = filteredWorkouts.filter(workout => !workout.completed);
   const completedWorkouts = filteredWorkouts.filter(workout => workout.completed);
+
+  // Handler for adding a new workout
+  const handleAddWorkout = (workoutData: Omit<Workout, 'id' | 'completed'>) => {
+    const newWorkout = workoutService.addWorkout({
+      ...workoutData,
+      completed: false,
+    });
+    
+    setWorkouts(prev => [newWorkout, ...prev]);
+  };
+
+  // Handler for toggling workout completion
+  const handleToggleCompletion = (id: string) => {
+    const updatedWorkout = workoutService.toggleWorkoutCompletion(id);
+    if (updatedWorkout) {
+      setWorkouts(prev => 
+        prev.map(workout => 
+          workout.id === id ? updatedWorkout : workout
+        )
+      );
+      
+      toast({
+        title: updatedWorkout.completed ? "Workout completed" : "Workout marked as incomplete",
+        description: `"${updatedWorkout.title}" has been updated.`,
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0 md:pt-20">
@@ -116,7 +71,10 @@ const Workouts: React.FC = () => {
             </p>
           </div>
           
-          <Button className="bg-fitness-accent hover:bg-fitness-accent/90">
+          <Button 
+            className="bg-fitness-accent hover:bg-fitness-accent/90"
+            onClick={() => setIsAddWorkoutOpen(true)}
+          >
             <Plus className="h-5 w-5 mr-2" />
             New Workout
           </Button>
@@ -165,7 +123,8 @@ const Workouts: React.FC = () => {
                     key={workout.id} 
                     {...workout} 
                     className="animate-scale-in" 
-                    style={{ animationDelay: `${index * 50}ms` }} 
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => handleToggleCompletion(workout.id)}
                   />
                 ))
               ) : (
@@ -184,7 +143,8 @@ const Workouts: React.FC = () => {
                     key={workout.id} 
                     {...workout} 
                     className="animate-scale-in" 
-                    style={{ animationDelay: `${index * 50}ms` }} 
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => handleToggleCompletion(workout.id)}
                   />
                 ))
               ) : (
@@ -203,7 +163,8 @@ const Workouts: React.FC = () => {
                     key={workout.id} 
                     {...workout} 
                     className="animate-scale-in" 
-                    style={{ animationDelay: `${index * 50}ms` }} 
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => handleToggleCompletion(workout.id)}
                   />
                 ))
               ) : (
@@ -215,6 +176,13 @@ const Workouts: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Add Workout Form Dialog */}
+      <AddWorkoutForm 
+        open={isAddWorkoutOpen} 
+        onOpenChange={setIsAddWorkoutOpen}
+        onSave={handleAddWorkout}
+      />
     </div>
   );
 };
