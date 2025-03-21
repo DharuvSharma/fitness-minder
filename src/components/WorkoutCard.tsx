@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, Flame, Activity, ChevronRight } from 'lucide-react';
+import { Clock, Flame, Activity, ChevronRight, Check } from 'lucide-react';
+import { workoutService } from '@/services/workoutService';
+import { useToast } from '@/hooks/use-toast';
 
 export type WorkoutType = 'strength' | 'cardio' | 'flexibility' | 'hiit';
 
@@ -16,6 +18,7 @@ export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {
   completed?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  onUpdate?: () => void; // Callback to refresh workout list after changes
 }
 
 const typeColors: Record<WorkoutType, string> = {
@@ -44,12 +47,39 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   className,
   style,
   onClick,
+  onUpdate,
   ...props
 }) => {
+  const { toast } = useToast();
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   });
+
+  const handleToggleComplete = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the card's onClick from firing
+    
+    try {
+      const updatedWorkout = await workoutService.toggleWorkoutCompletion(id);
+      if (updatedWorkout) {
+        toast({
+          title: updatedWorkout.completed ? "Workout completed" : "Workout marked as incomplete",
+          description: `${title} has been ${updatedWorkout.completed ? 'marked as complete' : 'marked as incomplete'}.`,
+        });
+        
+        if (onUpdate) {
+          onUpdate();
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling workout completion:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update workout status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div 
@@ -61,11 +91,18 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
       onClick={onClick}
       {...props}
     >
-      {completed && (
-        <div className="absolute top-3 right-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-fitness-mint"></div>
-        </div>
-      )}
+      <div className="absolute top-3 right-3">
+        <button
+          className={cn(
+            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+            completed ? "bg-fitness-mint" : "bg-gray-200 hover:bg-gray-300"
+          )}
+          onClick={handleToggleComplete}
+          aria-label={completed ? "Mark as incomplete" : "Mark as complete"}
+        >
+          {completed && <Check className="w-3.5 h-3.5 text-white" />}
+        </button>
+      </div>
       
       <div className="flex items-start justify-between mb-4">
         <div>

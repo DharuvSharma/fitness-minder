@@ -1,5 +1,6 @@
 
 import { WorkoutType } from '@/components/WorkoutCard';
+import api from './apiService';
 
 export interface Workout {
   id: string;
@@ -13,7 +14,7 @@ export interface Workout {
   notes?: string;
 }
 
-// Mock data for initial workouts
+// Mock data for initial workouts (used only when API fails or for development)
 const initialWorkouts: Workout[] = [
   {
     id: '1',
@@ -97,7 +98,7 @@ const initialWorkouts: Workout[] = [
   },
 ];
 
-// Get workouts from localStorage or use initial data
+// Get workouts from localStorage as fallback
 const getStoredWorkouts = (): Workout[] => {
   const storedWorkouts = localStorage.getItem('workouts');
   if (storedWorkouts) {
@@ -108,57 +109,94 @@ const getStoredWorkouts = (): Workout[] => {
   return initialWorkouts;
 };
 
-// Save workouts to localStorage
-const saveWorkouts = (workouts: Workout[]): void => {
-  localStorage.setItem('workouts', JSON.stringify(workouts));
-};
-
 export const workoutService = {
-  getWorkouts: (): Workout[] => {
-    return getStoredWorkouts();
+  getWorkouts: async (): Promise<Workout[]> => {
+    try {
+      const response = await api.get('/workouts');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching workouts from API:', error);
+      // Fallback to local storage if API fails
+      return getStoredWorkouts();
+    }
   },
   
-  addWorkout: (workout: Omit<Workout, 'id'>): Workout => {
-    const workouts = getStoredWorkouts();
-    const newWorkout = {
-      ...workout,
-      id: Date.now().toString(), // Simple ID generation
-    };
-    
-    workouts.push(newWorkout);
-    saveWorkouts(workouts);
-    return newWorkout;
+  addWorkout: async (workout: Omit<Workout, 'id'>): Promise<Workout> => {
+    try {
+      const response = await api.post('/workouts', workout);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding workout via API:', error);
+      // Fallback to local storage
+      const workouts = getStoredWorkouts();
+      const newWorkout = {
+        ...workout,
+        id: Date.now().toString(), // Simple ID generation
+      };
+      
+      workouts.push(newWorkout);
+      localStorage.setItem('workouts', JSON.stringify(workouts));
+      return newWorkout;
+    }
   },
   
-  updateWorkout: (id: string, updates: Partial<Workout>): Workout | null => {
-    const workouts = getStoredWorkouts();
-    const index = workouts.findIndex(w => w.id === id);
-    
-    if (index === -1) return null;
-    
-    workouts[index] = { ...workouts[index], ...updates };
-    saveWorkouts(workouts);
-    return workouts[index];
+  updateWorkout: async (id: string, updates: Partial<Workout>): Promise<Workout | null> => {
+    try {
+      const response = await api.put(`/workouts/${id}`, updates);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating workout via API:', error);
+      // Fallback to local storage
+      const workouts = getStoredWorkouts();
+      const index = workouts.findIndex(w => w.id === id);
+      
+      if (index === -1) return null;
+      
+      workouts[index] = { ...workouts[index], ...updates };
+      localStorage.setItem('workouts', JSON.stringify(workouts));
+      return workouts[index];
+    }
   },
   
-  deleteWorkout: (id: string): boolean => {
-    const workouts = getStoredWorkouts();
-    const filteredWorkouts = workouts.filter(w => w.id !== id);
-    
-    if (filteredWorkouts.length === workouts.length) return false;
-    
-    saveWorkouts(filteredWorkouts);
-    return true;
+  deleteWorkout: async (id: string): Promise<boolean> => {
+    try {
+      await api.delete(`/workouts/${id}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting workout via API:', error);
+      // Fallback to local storage
+      const workouts = getStoredWorkouts();
+      const filteredWorkouts = workouts.filter(w => w.id !== id);
+      
+      if (filteredWorkouts.length === workouts.length) return false;
+      
+      localStorage.setItem('workouts', JSON.stringify(filteredWorkouts));
+      return true;
+    }
   },
   
-  toggleWorkoutCompletion: (id: string): Workout | null => {
-    const workouts = getStoredWorkouts();
-    const index = workouts.findIndex(w => w.id === id);
-    
-    if (index === -1) return null;
-    
-    workouts[index].completed = !workouts[index].completed;
-    saveWorkouts(workouts);
-    return workouts[index];
+  toggleWorkoutCompletion: async (id: string): Promise<Workout | null> => {
+    try {
+      const workout = await workoutService.getWorkoutById(id);
+      if (!workout) return null;
+      
+      return await workoutService.updateWorkout(id, { completed: !workout.completed });
+    } catch (error) {
+      console.error('Error toggling workout completion:', error);
+      return null;
+    }
+  },
+  
+  getWorkoutById: async (id: string): Promise<Workout | null> => {
+    try {
+      const response = await api.get(`/workouts/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching workout by ID from API:', error);
+      // Fallback to local storage
+      const workouts = getStoredWorkouts();
+      const workout = workouts.find(w => w.id === id);
+      return workout || null;
+    }
   }
 };
