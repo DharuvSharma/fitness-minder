@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
 import WorkoutCard, { WorkoutType } from '@/components/WorkoutCard';

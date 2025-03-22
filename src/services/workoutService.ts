@@ -134,13 +134,13 @@ export const workoutService = {
         id: Date.now().toString(), // Simple ID generation
       };
       
-      workouts.push(newWorkout);
+      workouts.unshift(newWorkout); // Add to beginning of array
       localStorage.setItem('workouts', JSON.stringify(workouts));
       return newWorkout;
     }
   },
   
-  updateWorkout: async (id: string, updates: Partial<Workout>): Promise<Workout | null> => {
+  updateWorkout: async (id: string, updates: Partial<Workout>): Promise<Workout> => {
     try {
       const response = await api.put(`/workouts/${id}`, updates);
       return response.data;
@@ -150,11 +150,12 @@ export const workoutService = {
       const workouts = getStoredWorkouts();
       const index = workouts.findIndex(w => w.id === id);
       
-      if (index === -1) return null;
+      if (index === -1) throw new Error('Workout not found');
       
-      workouts[index] = { ...workouts[index], ...updates };
+      const updatedWorkout = { ...workouts[index], ...updates };
+      workouts[index] = updatedWorkout;
       localStorage.setItem('workouts', JSON.stringify(workouts));
-      return workouts[index];
+      return updatedWorkout;
     }
   },
   
@@ -175,19 +176,19 @@ export const workoutService = {
     }
   },
   
-  toggleWorkoutCompletion: async (id: string): Promise<Workout | null> => {
+  toggleWorkoutCompletion: async (id: string): Promise<Workout> => {
     try {
       const workout = await workoutService.getWorkoutById(id);
-      if (!workout) return null;
+      if (!workout) throw new Error('Workout not found');
       
       return await workoutService.updateWorkout(id, { completed: !workout.completed });
     } catch (error) {
       console.error('Error toggling workout completion:', error);
-      return null;
+      throw error;
     }
   },
   
-  getWorkoutById: async (id: string): Promise<Workout | null> => {
+  getWorkoutById: async (id: string): Promise<Workout> => {
     try {
       const response = await api.get(`/workouts/${id}`);
       return response.data;
@@ -196,7 +197,8 @@ export const workoutService = {
       // Fallback to local storage
       const workouts = getStoredWorkouts();
       const workout = workouts.find(w => w.id === id);
-      return workout || null;
+      if (!workout) throw new Error('Workout not found');
+      return workout;
     }
   }
 };
