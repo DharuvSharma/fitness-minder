@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { authService } from '@/services/apiService';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,6 +33,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,9 +52,11 @@ const Register = () => {
     setError('');
     
     try {
-      // Remove confirmPassword, it's only for validation
-      const { confirmPassword, ...userData } = data;
-      await authService.register(userData);
+      await register({
+        name: data.name,
+        email: data.email,
+        password: data.password
+      });
       toast.success('Registration successful! Please sign in.');
       navigate('/login');
     } catch (err: any) {

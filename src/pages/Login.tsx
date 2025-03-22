@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { authService } from '@/services/apiService';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,6 +28,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,7 +45,10 @@ const Login = () => {
     setError('');
     
     try {
-      await authService.login(data);
+      await login({
+        email: data.email,
+        password: data.password
+      });
       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (err: any) {
