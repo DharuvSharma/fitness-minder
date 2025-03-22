@@ -77,7 +77,17 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onGoalAdded }) => {
   const onSubmit = async (data: GoalFormValues) => {
     setIsSubmitting(true);
     try {
-      await goalService.addGoal(data);
+      // Ensure all required fields are present before calling addGoal
+      const goalData = {
+        title: data.title,
+        description: data.description,
+        target: data.target,
+        current: data.current,
+        type: data.type,
+        deadline: data.deadline,
+      };
+      
+      await goalService.addGoal(goalData);
       toast.success("Goal created successfully");
       form.reset(defaultValues);
       setOpen(false);
