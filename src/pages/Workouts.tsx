@@ -14,13 +14,30 @@ const Workouts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // Load workouts on component mount
   useEffect(() => {
-    const loadedWorkouts = workoutService.getWorkouts();
-    setWorkouts(loadedWorkouts);
-  }, []);
+    const fetchWorkouts = async () => {
+      try {
+        setIsLoading(true);
+        const loadedWorkouts = await workoutService.getWorkouts();
+        setWorkouts(loadedWorkouts);
+      } catch (error) {
+        console.error('Failed to load workouts:', error);
+        toast({
+          title: "Error loading workouts",
+          description: "Could not fetch your workouts. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWorkouts();
+  }, [toast]);
 
   // Filter workouts based on search term
   const filteredWorkouts = workouts.filter(workout => 
@@ -32,29 +49,36 @@ const Workouts: React.FC = () => {
   const completedWorkouts = filteredWorkouts.filter(workout => workout.completed);
 
   // Handler for adding a new workout
-  const handleAddWorkout = (workoutData: Omit<Workout, 'id' | 'completed'>) => {
-    const newWorkout = workoutService.addWorkout({
-      ...workoutData,
-      completed: false,
-    });
-    
-    setWorkouts(prev => [newWorkout, ...prev]);
-  };
-
-  // Handler for toggling workout completion
-  const handleToggleCompletion = (id: string) => {
-    const updatedWorkout = workoutService.toggleWorkoutCompletion(id);
-    if (updatedWorkout) {
-      setWorkouts(prev => 
-        prev.map(workout => 
-          workout.id === id ? updatedWorkout : workout
-        )
-      );
+  const handleAddWorkout = async (workoutData: Omit<Workout, 'id' | 'completed'>) => {
+    try {
+      const newWorkout = await workoutService.addWorkout({
+        ...workoutData,
+        completed: false,
+      });
+      
+      setWorkouts(prev => [newWorkout, ...prev]);
       
       toast({
-        title: updatedWorkout.completed ? "Workout completed" : "Workout marked as incomplete",
-        description: `"${updatedWorkout.title}" has been updated.`,
+        title: "Workout added",
+        description: `"${newWorkout.title}" has been added to your workouts.`,
       });
+    } catch (error) {
+      console.error('Failed to add workout:', error);
+      toast({
+        title: "Error adding workout",
+        description: "Could not save your workout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handler for refreshing the workout list
+  const handleWorkoutUpdate = async () => {
+    try {
+      const refreshedWorkouts = await workoutService.getWorkouts();
+      setWorkouts(refreshedWorkouts);
+    } catch (error) {
+      console.error('Failed to refresh workouts:', error);
     }
   };
 
@@ -117,14 +141,18 @@ const Workouts: React.FC = () => {
           
           <TabsContent value="all" className="animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredWorkouts.length > 0 ? (
+              {isLoading ? (
+                <div className="col-span-3 text-center py-12">
+                  <p className="text-muted-foreground">Loading workouts...</p>
+                </div>
+              ) : filteredWorkouts.length > 0 ? (
                 filteredWorkouts.map((workout, index) => (
                   <WorkoutCard 
                     key={workout.id} 
                     {...workout} 
                     className="animate-scale-in" 
                     style={{ animationDelay: `${index * 50}ms` }}
-                    onClick={() => handleToggleCompletion(workout.id)}
+                    onUpdate={handleWorkoutUpdate}
                   />
                 ))
               ) : (
@@ -137,14 +165,18 @@ const Workouts: React.FC = () => {
           
           <TabsContent value="upcoming" className="animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingWorkouts.length > 0 ? (
+              {isLoading ? (
+                <div className="col-span-3 text-center py-12">
+                  <p className="text-muted-foreground">Loading workouts...</p>
+                </div>
+              ) : upcomingWorkouts.length > 0 ? (
                 upcomingWorkouts.map((workout, index) => (
                   <WorkoutCard 
                     key={workout.id} 
                     {...workout} 
                     className="animate-scale-in" 
                     style={{ animationDelay: `${index * 50}ms` }}
-                    onClick={() => handleToggleCompletion(workout.id)}
+                    onUpdate={handleWorkoutUpdate}
                   />
                 ))
               ) : (
@@ -157,14 +189,18 @@ const Workouts: React.FC = () => {
           
           <TabsContent value="completed" className="animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {completedWorkouts.length > 0 ? (
+              {isLoading ? (
+                <div className="col-span-3 text-center py-12">
+                  <p className="text-muted-foreground">Loading workouts...</p>
+                </div>
+              ) : completedWorkouts.length > 0 ? (
                 completedWorkouts.map((workout, index) => (
                   <WorkoutCard 
                     key={workout.id} 
                     {...workout} 
                     className="animate-scale-in" 
                     style={{ animationDelay: `${index * 50}ms` }}
-                    onClick={() => handleToggleCompletion(workout.id)}
+                    onUpdate={handleWorkoutUpdate}
                   />
                 ))
               ) : (
