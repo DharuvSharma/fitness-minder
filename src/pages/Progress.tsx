@@ -100,7 +100,7 @@ const Progress: React.FC = () => {
     };
     
     fetchData();
-  }, [toast, dateRange]);
+  }, [toast, dateRange]); // Added dateRange to the dependency array to trigger refetch when it changes
 
   // Handle refreshing goals after a goal is added
   const handleGoalAdded = async () => {

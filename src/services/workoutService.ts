@@ -1,6 +1,6 @@
-
 import { WorkoutType } from '@/components/WorkoutCard';
 import api from './apiService';
+import { subDays, parseISO, isAfter } from 'date-fns';
 
 export interface Workout {
   id: string;
@@ -126,6 +126,25 @@ export const workoutService = {
       console.error('Error fetching workouts from API:', error);
       // Fallback to local storage if API fails
       return getStoredWorkouts();
+    }
+  },
+  
+  getWorkoutsByDateRange: async (days: number): Promise<Workout[]> => {
+    try {
+      // If you have a backend endpoint for date filtering, use it here
+      const response = await api.get(`/workouts/range?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching workouts by date range from API:', error);
+      
+      // Fallback to local filtering if API fails or endpoint doesn't exist
+      const allWorkouts = await workoutService.getWorkouts();
+      const dateThreshold = subDays(new Date(), days);
+      
+      return allWorkouts.filter(workout => {
+        const workoutDate = parseISO(workout.date);
+        return isAfter(workoutDate, dateThreshold);
+      });
     }
   },
   
