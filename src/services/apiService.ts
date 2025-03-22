@@ -36,27 +36,32 @@ api.interceptors.response.use(
     }
     
     // Handle specific HTTP status codes
-    switch (error.response.status) {
-      case 401:
-        // Clear auth data and redirect to login
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        toast.error('Your session has expired. Please login again.');
-        break;
-      case 403:
-        toast.error('You do not have permission to perform this action.');
-        break;
-      case 404:
-        toast.error('Resource not found.');
-        break;
-      case 500:
-        toast.error('Server error. Please try again later.');
-        break;
-      default:
-        // Handle other errors
-        const message = error.response?.data?.message || 'Something went wrong';
-        toast.error(message);
+    try {
+      switch (error.response.status) {
+        case 401:
+          // Clear auth data and redirect to login
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          toast.error('Your session has expired. Please login again.');
+          break;
+        case 403:
+          toast.error('You do not have permission to perform this action.');
+          break;
+        case 404:
+          toast.error('Resource not found.');
+          break;
+        case 500:
+          toast.error('Server error. Please try again later.');
+          break;
+        default:
+          // Handle other errors
+          const message = error.response?.data?.message || 'Something went wrong';
+          toast.error(message);
+      }
+    } catch (e) {
+      console.error('Error in error handling:', e);
+      toast.error('An unexpected error occurred');
     }
     
     return Promise.reject(error);

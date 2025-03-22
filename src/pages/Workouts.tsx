@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
 import WorkoutCard, { WorkoutType } from '@/components/WorkoutCard';
@@ -8,13 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/Navbar';
 import { workoutService, Workout } from '@/services/workoutService';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const Workouts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
 
   // Load workouts on component mount
   useEffect(() => {
@@ -22,30 +24,34 @@ const Workouts: React.FC = () => {
       try {
         setIsLoading(true);
         const loadedWorkouts = await workoutService.getWorkouts();
-        setWorkouts(loadedWorkouts);
+        // Ensure workouts is always an array
+        setWorkouts(Array.isArray(loadedWorkouts) ? loadedWorkouts : []);
       } catch (error) {
         console.error('Failed to load workouts:', error);
-        toast({
-          title: "Error loading workouts",
-          description: "Could not fetch your workouts. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Could not fetch your workouts. Please try again.");
+        setWorkouts([]); // Set to empty array on error
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchWorkouts();
-  }, [toast]);
+  }, []);
 
-  // Filter workouts based on search term
-  const filteredWorkouts = workouts.filter(workout => 
-    workout.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter workouts based on search term - ensure we're working with an array
+  const filteredWorkouts = Array.isArray(workouts) 
+    ? workouts.filter(workout => 
+        workout.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    : [];
   
-  // Group workouts by upcoming and completed
-  const upcomingWorkouts = filteredWorkouts.filter(workout => !workout.completed);
-  const completedWorkouts = filteredWorkouts.filter(workout => workout.completed);
+  // Group workouts by upcoming and completed - ensure we're working with arrays
+  const upcomingWorkouts = Array.isArray(filteredWorkouts)
+    ? filteredWorkouts.filter(workout => !workout.completed)
+    : [];
+    
+  const completedWorkouts = Array.isArray(filteredWorkouts)
+    ? filteredWorkouts.filter(workout => workout.completed)
+    : [];
 
   // Handler for adding a new workout
   const handleAddWorkout = async (workoutData: Omit<Workout, 'id' | 'completed'>) => {
@@ -55,19 +61,13 @@ const Workouts: React.FC = () => {
         completed: false,
       });
       
-      setWorkouts(prev => [newWorkout, ...prev]);
+      // Update state with the new workout
+      setWorkouts(prev => Array.isArray(prev) ? [newWorkout, ...prev] : [newWorkout]);
       
-      toast({
-        title: "Workout added",
-        description: `"${newWorkout.title}" has been added to your workouts.`,
-      });
+      toast.success(`"${newWorkout.title}" has been added to your workouts.`);
     } catch (error) {
       console.error('Failed to add workout:', error);
-      toast({
-        title: "Error adding workout",
-        description: "Could not save your workout. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Could not save your workout. Please try again.");
     }
   };
 
@@ -75,9 +75,10 @@ const Workouts: React.FC = () => {
   const handleWorkoutUpdate = async () => {
     try {
       const refreshedWorkouts = await workoutService.getWorkouts();
-      setWorkouts(refreshedWorkouts);
+      setWorkouts(Array.isArray(refreshedWorkouts) ? refreshedWorkouts : []);
     } catch (error) {
       console.error('Failed to refresh workouts:', error);
+      toast.error("Failed to update workouts. Please try again.");
     }
   };
 

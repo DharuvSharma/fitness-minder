@@ -100,20 +100,28 @@ const initialWorkouts: Workout[] = [
 
 // Get workouts from localStorage as fallback
 const getStoredWorkouts = (): Workout[] => {
-  const storedWorkouts = localStorage.getItem('workouts');
-  if (storedWorkouts) {
-    return JSON.parse(storedWorkouts);
+  try {
+    const storedWorkouts = localStorage.getItem('workouts');
+    if (storedWorkouts) {
+      const parsed = JSON.parse(storedWorkouts);
+      return Array.isArray(parsed) ? parsed : initialWorkouts;
+    }
+    // Initialize with mock data if nothing in localStorage
+    localStorage.setItem('workouts', JSON.stringify(initialWorkouts));
+    return initialWorkouts;
+  } catch (error) {
+    console.error('Error parsing workouts from localStorage:', error);
+    return initialWorkouts;
   }
-  // Initialize with mock data if nothing in localStorage
-  localStorage.setItem('workouts', JSON.stringify(initialWorkouts));
-  return initialWorkouts;
 };
 
 export const workoutService = {
   getWorkouts: async (): Promise<Workout[]> => {
     try {
       const response = await api.get('/workouts');
-      return response.data;
+      const data = response.data;
+      // Ensure we're returning an array
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error fetching workouts from API:', error);
       // Fallback to local storage if API fails
