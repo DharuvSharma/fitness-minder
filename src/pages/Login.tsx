@@ -72,12 +72,14 @@ const Login = () => {
       // Show specific error from the server if available
       if (err.response?.data?.message) {
         setError(err.response.data.message);
+      } else if (!err.response) {
+        setError('Network error, please try again later.');
       } else {
         setError('Invalid email or password. Please try again.');
       }
       
       // Also show as a toast for better visibility
-      toast.error(err.response?.data?.message || 'Authentication failed');
+      toast.error(error || 'Authentication failed');
       
       setIsLoading(false);
     }

@@ -32,7 +32,7 @@ api.interceptors.response.use(
     // Handle network errors
     if (!error.response) {
       console.error('Network Error:', error);
-      toast.error('Network Error. Please check your connection or the server status.');
+      toast.error('Network error, please try again later.');
       return Promise.reject(error);
     }
     
@@ -42,7 +42,6 @@ api.interceptors.response.use(
         case 401:
           // Clear auth data and redirect to login
           localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
           window.location.href = '/login';
           toast.error('Your session has expired. Please login again.');
           break;
@@ -86,7 +85,7 @@ export const authService = {
       const response = await api.post('/auth/login', credentials);
       const { token, id, name, email } = response.data;
       
-      // Store token and user data
+      // Store token in localStorage
       localStorage.setItem('auth_token', token);
       
       const user = { id, name, email };
@@ -120,27 +119,6 @@ export const authService = {
     } catch (error) {
       console.error('Error getting current user data:', error);
       throw error;
-    }
-  },
-  
-  getCurrentUser: () => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      return null;
-    }
-    
-    // Check if token is expired
-    if (isTokenExpired(token)) {
-      localStorage.removeItem('auth_token');
-      return null;
-    }
-    
-    try {
-      // Instead of parsing local storage, we'll fetch from API
-      return { isAuthenticated: true };
-    } catch (error) {
-      localStorage.removeItem('auth_token');
-      return null;
     }
   },
   
