@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import { toast } from 'sonner';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 // Create an axios instance with default config
 const api = axios.create({
