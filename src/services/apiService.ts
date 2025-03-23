@@ -1,12 +1,11 @@
-
 import axios from 'axios';
 import { toast } from 'sonner';
 import { jwtDecode } from 'jwt-decode';
 
 // Create an axios instance with default config
 const api = axios.create({
-  // Use relative URL for deployment flexibility
-  baseURL: '/api', 
+  // Update baseURL to point to the Spring Boot backend
+  baseURL: 'http://localhost:8080/api', 
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -100,6 +99,7 @@ export const authService = {
   register: async (userData: { name: string; email: string; password: string }) => {
     try {
       const response = await api.post('/auth/register', userData);
+      toast.success('Registration successful! Please sign in.');
       return response.data;
     } catch (error) {
       console.error('Registration error:', error);
