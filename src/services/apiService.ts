@@ -1,6 +1,7 @@
 
 import axios from 'axios';
 import { toast } from 'sonner';
+import jwtDecode from 'jwt-decode';
 
 // Create an axios instance with default config
 const api = axios.create({
@@ -68,17 +69,27 @@ api.interceptors.response.use(
   }
 );
 
+// Function to check if JWT token is expired
+const isTokenExpired = (token: string) => {
+  try {
+    const decoded: any = jwtDecode(token);
+    return decoded.exp * 1000 < Date.now();
+  } catch (error) {
+    return true;
+  }
+};
+
 // Auth related functions
 export const authService = {
   login: async (credentials: { email: string; password: string }) => {
     try {
       const response = await api.post('/auth/login', credentials);
-      const { token, user } = response.data;
+      const { token, id, name, email } = response.data;
       
       // Store token and user data
       localStorage.setItem('auth_token', token);
-      localStorage.setItem('user', JSON.stringify(user));
       
+      const user = { id, name, email };
       return user;
     } catch (error) {
       console.error('Login error:', error);
@@ -98,17 +109,49 @@ export const authService = {
   
   logout: () => {
     localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    window.location.href = '/';
+    window.location.href = '/login';
+  },
+  
+  getCurrentUserData: async () => {
+    try {
+      const response = await api.get('/user/me');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting current user data:', error);
+      throw error;
+    }
   },
   
   getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      return null;
+    }
+    
+    // Check if token is expired
+    if (isTokenExpired(token)) {
+      localStorage.removeItem('auth_token');
+      return null;
+    }
+    
+    try {
+      // Instead of parsing local storage, we'll fetch from API
+      return { isAuthenticated: true };
+    } catch (error) {
+      localStorage.removeItem('auth_token');
+      return null;
+    }
   },
   
   isAuthenticated: () => {
-    return !!localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token');
+    return !!token && !isTokenExpired(token);
+  },
+  
+  isTokenExpired: () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return true;
+    return isTokenExpired(token);
   }
 };
 

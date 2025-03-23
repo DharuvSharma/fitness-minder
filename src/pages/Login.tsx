@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -28,9 +29,16 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // If user is already authenticated, redirect to dashboard
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -49,12 +57,28 @@ const Login = () => {
         email: data.email,
         password: data.password
       });
-      toast.success('Login successful!');
-      navigate('/dashboard');
+      
+      // Show success notification
+      toast.success('Login successful! Redirecting to dashboard...');
+      
+      // Redirect to dashboard after a 2-second delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+      
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Invalid email or password');
-    } finally {
+      
+      // Show specific error from the server if available
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Invalid email or password. Please try again.');
+      }
+      
+      // Also show as a toast for better visibility
+      toast.error(err.response?.data?.message || 'Authentication failed');
+      
       setIsLoading(false);
     }
   };

@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '@/services/apiService';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -15,6 +16,7 @@ interface AuthContextType {
   login: (credentials: { email: string; password: string }) => Promise<void>;
   register: (userData: { name: string; email: string; password: string }) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,20 +25,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Function to fetch user data with the token
+  const refreshUser = async () => {
+    if (!authService.isAuthenticated()) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      const userData = await authService.getCurrentUserData();
+      setUser(userData);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      // If we can't get user data with the token, the token might be invalid
+      authService.logout();
+      setUser(null);
+      toast.error('Your session has expired. Please login again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Check if user is logged in on component mount
-    const checkAuthStatus = () => {
-      try {
-        const currentUser = authService.getCurrentUser();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-      } finally {
-        setIsLoading(false);
+    refreshUser();
+    
+    // Set up an interval to check token expiration
+    const tokenCheckInterval = setInterval(() => {
+      if (authService.isAuthenticated() && authService.isTokenExpired()) {
+        toast.error('Your session has expired. Please login again.');
+        authService.logout();
+        setUser(null);
       }
-    };
+    }, 60000); // Check every minute
 
-    checkAuthStatus();
+    return () => clearInterval(tokenCheckInterval);
   }, []);
 
   const login = async (credentials: { email: string; password: string }) => {
@@ -72,6 +96,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         register,
         logout,
+        refreshUser,
       }}
     >
       {children}
