@@ -16,6 +16,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        // Create a response with user details from the authenticated principal
         Map<String, Object> response = new HashMap<>();
         response.put("id", userDetails.getId());
         response.put("name", userDetails.getName());

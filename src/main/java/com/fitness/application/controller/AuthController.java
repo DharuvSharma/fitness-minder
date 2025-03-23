@@ -40,14 +40,20 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        // Authenticate user with provided credentials
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         
+        // Set authentication in security context
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        
+        // Generate JWT token
         String jwt = jwtUtils.generateJwtToken(authentication);
         
+        // Get user details from authenticated user
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         
+        // Return token and user info
         return ResponseEntity.ok(JwtResponse.builder()
                 .token(jwt)
                 .id(userDetails.getId())
@@ -58,6 +64,7 @@ public class AuthController {
     
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        // Check if email already exists
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.builder()

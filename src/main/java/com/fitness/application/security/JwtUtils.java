@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -24,7 +26,13 @@ public class JwtUtils {
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
         
+        // Add additional claims to the token
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", userPrincipal.getId());
+        claims.put("name", userPrincipal.getName());
+        
         return Jwts.builder()
+                .setClaims(claims)
                 .setSubject(userPrincipal.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
