@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, BarChart2, Target, ArrowRight, Users, Award } from 'lucide-react';
@@ -6,23 +5,13 @@ import { Button } from '@/components/ui/button';
 import { SidebarDemo } from '@/components/SidebarDemo';
 
 const Index = () => {
-  // Wrap the useNavigate call in a try/catch block to prevent the app from crashing
-  // if it's rendered outside of a Router context
-  const navigate = React.useMemo(() => {
-    try {
-      return useNavigate();
-    } catch (error) {
-      // Return a function that does nothing to avoid errors when outside Router context
-      return () => {};
-    }
-  }, []);
+  const navigate = useNavigate();
   
   const handleNavigation = (path: string) => {
     try {
       navigate(path);
     } catch (error) {
       console.error("Navigation failed:", error);
-      // Fallback to standard navigation if React Router fails
       window.location.href = path;
     }
   };
