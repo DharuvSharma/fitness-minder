@@ -29,7 +29,7 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-fitness-lightgray overflow-hidden">
-      {/* Hero Section */}
+      {/* Hero Section - Updated */}
       <section className="relative h-screen flex items-center justify-center">
         <div className="fitness-container text-center max-w-4xl animate-fade-in">
           <span className="badge-pill bg-fitness-accent/10 text-fitness-accent mb-4 inline-block">
