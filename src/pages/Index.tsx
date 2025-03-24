@@ -6,7 +6,26 @@ import { Button } from '@/components/ui/button';
 import { SidebarDemo } from '@/components/SidebarDemo';
 
 const Index = () => {
-  const navigate = useNavigate();
+  // Wrap the useNavigate call in a try/catch block to prevent the app from crashing
+  // if it's rendered outside of a Router context
+  const navigate = React.useMemo(() => {
+    try {
+      return useNavigate();
+    } catch (error) {
+      // Return a function that does nothing to avoid errors when outside Router context
+      return () => {};
+    }
+  }, []);
+  
+  const handleNavigation = (path: string) => {
+    try {
+      navigate(path);
+    } catch (error) {
+      console.error("Navigation failed:", error);
+      // Fallback to standard navigation if React Router fails
+      window.location.href = path;
+    }
+  };
   
   return (
     <div className="min-h-screen bg-fitness-lightgray overflow-hidden">
@@ -26,7 +45,7 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <Button 
               className="bg-fitness-black text-white hover:bg-fitness-black/90 px-8 py-6 text-lg"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => handleNavigation('/dashboard')}
             >
               Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -34,7 +53,7 @@ const Index = () => {
             <Button 
               variant="outline" 
               className="border-fitness-black text-fitness-black hover:bg-fitness-black/5 px-8 py-6 text-lg"
-              onClick={() => navigate('/workouts')}
+              onClick={() => handleNavigation('/workouts')}
             >
               View Workouts
             </Button>
@@ -131,7 +150,7 @@ const Index = () => {
           <Button 
             className="bg-white text-fitness-black hover:bg-gray-100 px-8 py-6 text-lg animate-slide-up"
             style={{ animationDelay: '200ms' }}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => handleNavigation('/dashboard')}
           >
             Start Your Journey
             <ArrowRight className="ml-2 h-5 w-5" />
