@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dumbbell, Target, BarChart2, Plus, Calendar } from 'lucide-react';
 import WorkoutCard, { WorkoutType } from '@/components/WorkoutCard';
@@ -95,7 +94,7 @@ const strengthData = [
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0 md:pt-20">
+    <div className="min-h-screen bg-fitness-lightgray">
       <Navbar />
       
       <div className="fitness-container pt-4 animate-fade-in">
