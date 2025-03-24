@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, BarChart2, Target, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SidebarDemo } from '@/components/SidebarDemo';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -93,6 +94,27 @@ const Index = () => {
                 Set personalized goals and track your progress toward achieving them with milestone tracking.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Sidebar Demo Section */}
+      <section className="py-24 bg-fitness-lightgray">
+        <div className="fitness-container">
+          <div className="text-center mb-16 animate-slide-up">
+            <span className="badge-pill bg-fitness-accent/10 text-fitness-accent mb-4 inline-block">
+              New Feature
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Animated Sidebar Navigation
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+              Experience our new animated sidebar for seamless navigation through the app.
+            </p>
+          </div>
+          
+          <div className="w-full h-[600px] rounded-xl overflow-hidden shadow-xl">
+            <SidebarDemo />
           </div>
         </div>
       </section>
