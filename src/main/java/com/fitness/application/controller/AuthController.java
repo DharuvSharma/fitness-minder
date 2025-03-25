@@ -22,23 +22,34 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
-@RestController
-@RequestMapping("/api/auth")
+/**
+ * REST Controller for handling authentication-related endpoints.
+ * This controller manages user login and registration.
+ */
+@CrossOrigin(origins = "*", maxAge = 3600) // Allow cross-origin requests from any domain with a max age of 1 hour
+@RestController // Marks this class as a controller where every method returns a domain object instead of a view
+@RequestMapping("/api/auth") // All endpoints in this controller will start with /api/auth
 public class AuthController {
-    @Autowired
+    @Autowired // Injects the authentication manager bean
     AuthenticationManager authenticationManager;
     
-    @Autowired
+    @Autowired // Injects the user repository for database operations
     UserRepository userRepository;
     
-    @Autowired
+    @Autowired // Injects the password encoder for secure password handling
     PasswordEncoder encoder;
     
-    @Autowired
+    @Autowired // Injects utilities for JWT token generation and validation
     JwtUtils jwtUtils;
     
-    @PostMapping("/login")
+    /**
+     * Handles user login requests.
+     * Validates credentials, generates a JWT token, and returns user details.
+     * 
+     * @param loginRequest The login credentials (email and password)
+     * @return JWT token and user details if authentication is successful
+     */
+    @PostMapping("/login") // Maps to POST /api/auth/login
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         // Authenticate user with provided credentials
         Authentication authentication = authenticationManager.authenticate(
@@ -62,7 +73,14 @@ public class AuthController {
                 .build());
     }
     
-    @PostMapping("/register")
+    /**
+     * Handles user registration requests.
+     * Creates a new user account if the email is not already in use.
+     * 
+     * @param registerRequest The registration details (name, email, password)
+     * @return Success message if registration is successful
+     */
+    @PostMapping("/register") // Maps to POST /api/auth/register
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         // Check if email already exists
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
@@ -77,7 +95,7 @@ public class AuthController {
         User user = User.builder()
                 .name(registerRequest.getName())
                 .email(registerRequest.getEmail())
-                .password(encoder.encode(registerRequest.getPassword()))
+                .password(encoder.encode(registerRequest.getPassword())) // Encrypt the password
                 .build();
         
         // Default role for new users
@@ -85,8 +103,10 @@ public class AuthController {
         roles.add("ROLE_USER");
         user.setRoles(roles);
         
+        // Save user to database
         userRepository.save(user);
         
+        // Return success response
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
                 .message("User registered successfully!")

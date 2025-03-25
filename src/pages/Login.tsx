@@ -20,39 +20,46 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
 
+// Define the validation schema for the login form using Zod
 const loginSchema = z.object({
+  // Validate that the email is in the correct format
   email: z.string().email({ message: 'Please enter a valid email address' }),
+  // Validate that the password is at least 6 characters long
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
 });
 
+// Create a TypeScript type from the Zod schema
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); // Hook for programmatic navigation
+  const { login, isAuthenticated } = useAuth(); // Get authentication functions from context
+  const [error, setError] = useState(''); // State for error messages
+  const [isLoading, setIsLoading] = useState(false); // State for loading status
 
   useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (isAuthenticated) {
       navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate]); // Re-run when these dependencies change
 
+  // Initialize the form with React Hook Form and Zod validation
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema), // Connect Zod validation
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
+  // Handle form submission
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    setError('');
+    setIsLoading(true); // Show loading state
+    setError(''); // Clear any previous errors
     
     try {
+      // Call the login function from AuthContext
       await login({
         email: data.email,
         password: data.password
@@ -81,12 +88,13 @@ const Login = () => {
       // Also show as a toast for better visibility
       toast.error(error || 'Authentication failed');
       
-      setIsLoading(false);
+      setIsLoading(false); // Reset loading state
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Back button to return to home page */}
       <div className="p-4">
         <Button 
           variant="ghost" 
@@ -98,8 +106,10 @@ const Login = () => {
         </Button>
       </div>
       
+      {/* Main content area with login form */}
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full bg-card p-8 rounded-lg shadow-sm border">
+          {/* Form header */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-bold tracking-tight">Sign In</h1>
             <p className="text-muted-foreground mt-2">
@@ -107,14 +117,17 @@ const Login = () => {
             </p>
           </div>
           
+          {/* Error alert shown when there's an error */}
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           
+          {/* Login form */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Email field */}
               <FormField
                 control={form.control}
                 name="email"
@@ -137,6 +150,7 @@ const Login = () => {
                 )}
               />
               
+              {/* Password field */}
               <FormField
                 control={form.control}
                 name="password"
@@ -160,6 +174,7 @@ const Login = () => {
                 )}
               />
               
+              {/* Submit button */}
               <Button 
                 type="submit" 
                 className="w-full bg-fitness-accent hover:bg-fitness-accent/90"
@@ -170,6 +185,7 @@ const Login = () => {
             </form>
           </Form>
           
+          {/* Link to registration page */}
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Don't have an account?{' '}
