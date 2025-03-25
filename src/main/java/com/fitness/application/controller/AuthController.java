@@ -3,19 +3,14 @@ package com.fitness.application.controller;
 
 import com.fitness.application.dto.ApiResponse;
 import com.fitness.application.dto.JwtResponse;
-import com.fitness.application.dto.LoginRequest;
 import com.fitness.application.dto.RegisterRequest;
 import com.fitness.application.model.User;
 import com.fitness.application.repository.UserRepository;
 import com.fitness.application.security.JwtUtils;
-import com.fitness.application.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,68 +19,23 @@ import java.util.Set;
 
 /**
  * REST Controller for handling authentication-related endpoints.
- * This controller manages user login and registration operations.
- * 
- * Authentication flow:
- * 1. Client sends credentials to login/register endpoints
- * 2. Server validates credentials
- * 3. On success, server generates JWT token and returns it with user details
- * 4. Client stores token and uses it for subsequent requests
+ * With login removed, this controller now handles only registration.
  */
-@CrossOrigin(origins = "*", maxAge = 3600) // Allow cross-origin requests from any domain with a max age of 1 hour
-@RestController // Marks this class as a controller where every method returns a domain object instead of a view
-@RequestMapping("/api/auth") // All endpoints in this controller will start with /api/auth
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RestController
+@RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired // Injects the authentication manager bean
+    @Autowired
     AuthenticationManager authenticationManager;
     
-    @Autowired // Injects the user repository for database operations
+    @Autowired
     UserRepository userRepository;
     
-    @Autowired // Injects the password encoder for secure password handling
+    @Autowired
     PasswordEncoder encoder;
     
-    @Autowired // Injects utilities for JWT token generation and validation
+    @Autowired
     JwtUtils jwtUtils;
-    
-    /**
-     * Handles user login requests.
-     * Validates credentials, generates a JWT token, and returns user details.
-     * 
-     * Authentication flow:
-     * 1. Validate credentials using Spring Security's AuthenticationManager
-     * 2. If valid, create JWT token
-     * 3. Return token with user information
-     * 
-     * @param loginRequest The login credentials (email and password)
-     * @return JWT token and user details if authentication is successful
-     */
-    @PostMapping("/login") // Maps to POST /api/auth/login
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        // Authenticate user with provided credentials
-        // This will throw AuthenticationException if credentials are invalid
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-        
-        // Set authentication in security context
-        // This establishes the user as authenticated in the current request
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        
-        // Generate JWT token based on the authenticated user details
-        String jwt = jwtUtils.generateJwtToken(authentication);
-        
-        // Get user details from authenticated user
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        
-        // Return token and user info
-        // The frontend will store the token and use it for subsequent API calls
-        return ResponseEntity.ok(JwtResponse.builder()
-                .token(jwt)
-                .id(userDetails.getId())
-                .name(userDetails.getName())
-                .email(userDetails.getUsername())
-                .build());
-    }
     
     /**
      * Handles user registration requests.
@@ -100,7 +50,7 @@ public class AuthController {
      * @param registerRequest The registration details (name, email, password)
      * @return Success message if registration is successful
      */
-    @PostMapping("/register") // Maps to POST /api/auth/register
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         // Check if email already exists to prevent duplicate accounts
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
@@ -115,7 +65,7 @@ public class AuthController {
         User user = User.builder()
                 .name(registerRequest.getName())
                 .email(registerRequest.getEmail())
-                .password(encoder.encode(registerRequest.getPassword())) // Encrypt the password before storing
+                .password(encoder.encode(registerRequest.getPassword()))
                 .build();
         
         // Default role for new users

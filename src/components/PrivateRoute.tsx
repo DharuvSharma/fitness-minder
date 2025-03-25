@@ -18,9 +18,9 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     );
   }
   
-  // Redirect to login if not authenticated
+  // Redirect to register if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/register" replace />;
   }
   
   // Render children if authenticated

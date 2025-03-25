@@ -1,20 +1,13 @@
-
 import axios from 'axios';
 import { toast } from 'sonner';
 import { jwtDecode } from 'jwt-decode';
 
 /**
  * Create an axios instance with default configuration.
- * 
- * This instance:
- * - Has a base URL pointing to the backend API
- * - Sets default timeout and headers
- * - Will be used for all API requests
  */
 const api = axios.create({
-  // Update baseURL to point to the Spring Boot backend
   baseURL: 'http://localhost:8080/api', 
-  timeout: 10000, // Request timeout in milliseconds
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -22,10 +15,6 @@ const api = axios.create({
 
 /**
  * Request interceptor for adding authentication token.
- * 
- * This interceptor:
- * - Runs before each request
- * - Adds the JWT token from localStorage to the Authorization header if available
  */
 api.interceptors.request.use(
   (config) => {
@@ -40,30 +29,22 @@ api.interceptors.request.use(
 
 /**
  * Response interceptor for handling common errors.
- * 
- * This interceptor:
- * - Runs after each response or error
- * - Handles common HTTP errors with appropriate messages
- * - Handles authentication errors by redirecting to login
  */
 api.interceptors.response.use(
-  (response) => response, // Return successful responses unchanged
+  (response) => response,
   (error) => {
-    // Handle network errors
     if (!error.response) {
       console.error('Network Error:', error);
       toast.error('Network error, please try again later.');
       return Promise.reject(error);
     }
     
-    // Handle specific HTTP status codes
     try {
       switch (error.response.status) {
         case 401:
-          // Clear auth data and redirect to login
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
-          toast.error('Your session has expired. Please login again.');
+          window.location.href = '/register';
+          toast.error('Your session has expired. Please register again.');
           break;
         case 403:
           toast.error('You do not have permission to perform this action.');
@@ -75,7 +56,6 @@ api.interceptors.response.use(
           toast.error('Server error. Please try again later.');
           break;
         default:
-          // Handle other errors
           const message = error.response?.data?.message || 'Something went wrong';
           toast.error(message);
       }
@@ -90,66 +70,25 @@ api.interceptors.response.use(
 
 /**
  * Function to check if JWT token is expired.
- * 
- * This function:
- * - Decodes the JWT token
- * - Checks if the expiration time is in the past
- * 
- * @param token The JWT token to check
- * @return True if token is expired, false otherwise
  */
 const isTokenExpired = (token: string) => {
   try {
     const decoded: any = jwtDecode(token);
-    return decoded.exp * 1000 < Date.now(); // Compare expiration timestamp with current time
+    return decoded.exp * 1000 < Date.now();
   } catch (error) {
-    return true; // If token can't be decoded, consider it expired
+    return true;
   }
 };
 
 // --- Authentication Service ---
 export const authService = {
   /**
-   * Authenticates a user with email and password.
-   * 
-   * This function:
-   * 1. Sends login credentials to the backend
-   * 2. Stores the JWT token on success
-   * 3. Returns the user data
-   * 
-   * @param credentials User credentials (email, password)
-   * @return User data on successful login
-   */
-  login: async (credentials: { email: string; password: string }) => {
-    try {
-      const response = await api.post('/auth/login', credentials);
-      const { token, id, name, email } = response.data;
-      
-      // Store token in localStorage
-      localStorage.setItem('auth_token', token);
-      
-      const user = { id, name, email };
-      return user;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  },
-  
-  /**
    * Registers a new user.
-   * 
-   * This function:
-   * 1. Sends registration data to the backend
-   * 2. Shows success message on completion
-   * 
-   * @param userData User registration data (name, email, password)
-   * @return API response data
    */
   register: async (userData: { name: string; email: string; password: string }) => {
     try {
       const response = await api.post('/auth/register', userData);
-      toast.success('Registration successful! Please sign in.');
+      toast.success('Registration successful!');
       return response.data;
     } catch (error) {
       console.error('Registration error:', error);
@@ -159,23 +98,14 @@ export const authService = {
   
   /**
    * Logs out the current user.
-   * 
-   * This function:
-   * 1. Removes the JWT token from localStorage
-   * 2. Redirects to the login page
    */
   logout: () => {
     localStorage.removeItem('auth_token');
-    window.location.href = '/login';
+    window.location.href = '/';
   },
   
   /**
    * Fetches current user data from the API.
-   * 
-   * This function:
-   * - Makes an authenticated request to get user information
-   * 
-   * @return Current user data
    */
   getCurrentUserData: async () => {
     try {
@@ -189,11 +119,6 @@ export const authService = {
   
   /**
    * Checks if the user is authenticated.
-   * 
-   * This function:
-   * - Verifies that a non-expired token exists
-   * 
-   * @return True if authenticated, false otherwise
    */
   isAuthenticated: () => {
     const token = localStorage.getItem('auth_token');
@@ -202,12 +127,6 @@ export const authService = {
   
   /**
    * Checks if the current token is expired.
-   * 
-   * This function:
-   * - Gets the token from localStorage
-   * - Checks if it's expired
-   * 
-   * @return True if token is expired or missing, false otherwise
    */
   isTokenExpired: () => {
     const token = localStorage.getItem('auth_token');
