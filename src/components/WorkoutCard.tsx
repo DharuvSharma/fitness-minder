@@ -2,8 +2,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Clock, Flame, Activity, ChevronRight, Check } from 'lucide-react';
-import { workoutService } from '@/services/workoutService';
-import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export type WorkoutType = 'strength' | 'cardio' | 'flexibility' | 'hiit';
 
@@ -16,23 +15,13 @@ export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {
   exercises: number;
   date: string;
   completed?: boolean;
-  className?: string;
-  style?: React.CSSProperties;
-  onUpdate?: () => void; // Callback to refresh workout list after changes
 }
 
-const typeColors: Record<WorkoutType, string> = {
-  strength: 'bg-blue-50 text-blue-600 border-blue-100',
-  cardio: 'bg-red-50 text-red-600 border-red-100',
-  flexibility: 'bg-purple-50 text-purple-600 border-purple-100',
-  hiit: 'bg-orange-50 text-orange-600 border-orange-100',
-};
-
-const typeLabels: Record<WorkoutType, string> = {
-  strength: 'Strength',
-  cardio: 'Cardio',
-  flexibility: 'Flexibility',
-  hiit: 'HIIT',
+const typeConfig: Record<WorkoutType, { color: string, label: string }> = {
+  strength: { color: 'bg-blue-50 text-blue-600', label: 'Strength' },
+  cardio: { color: 'bg-red-50 text-red-600', label: 'Cardio' },
+  flexibility: { color: 'bg-purple-50 text-purple-600', label: 'Flexibility' },
+  hiit: { color: 'bg-orange-50 text-orange-600', label: 'HIIT' },
 };
 
 const WorkoutCard: React.FC<WorkoutCardProps> = ({
@@ -45,109 +34,76 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   date,
   completed = false,
   className,
-  style,
-  onClick,
-  onUpdate,
   ...props
 }) => {
-  const { toast } = useToast();
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   });
-
-  const handleToggleComplete = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the card's onClick from firing
-    
-    try {
-      const updatedWorkout = await workoutService.toggleWorkoutCompletion(id);
-      if (updatedWorkout) {
-        toast({
-          title: updatedWorkout.completed ? "Workout completed" : "Workout marked as incomplete",
-          description: `${title} has been ${updatedWorkout.completed ? 'marked as complete' : 'marked as incomplete'}.`,
-        });
-        
-        if (onUpdate) {
-          onUpdate();
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling workout completion:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update workout status. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  
+  const workoutConfig = typeConfig[type];
 
   return (
     <div 
       className={cn(
-        "glass-card relative overflow-hidden rounded-2xl p-5 hover-lift cursor-pointer",
+        "bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow",
         className
       )}
-      style={style}
-      onClick={onClick}
       {...props}
     >
-      <div className="absolute top-3 right-3">
-        <button
-          className={cn(
-            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
-            completed ? "bg-fitness-mint" : "bg-gray-200 hover:bg-gray-300"
-          )}
-          onClick={handleToggleComplete}
-          aria-label={completed ? "Mark as incomplete" : "Mark as complete"}
-        >
-          {completed && <Check className="w-3.5 h-3.5 text-white" />}
-        </button>
-      </div>
-      
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <span className={cn(
-            "badge-pill text-xs inline-block mb-2 border",
-            typeColors[type]
+      <div className="relative">
+        <div className="absolute top-0 right-0">
+          <div className={cn(
+            "w-6 h-6 rounded-full flex items-center justify-center",
+            completed ? "bg-green-500" : "bg-gray-200"
           )}>
-            {typeLabels[type]}
+            {completed && <Check className="w-3.5 h-3.5 text-white" />}
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <span className={cn(
+            "inline-block px-2.5 py-0.5 text-xs font-medium rounded-full mb-2",
+            workoutConfig.color
+          )}>
+            {workoutConfig.label}
           </span>
-          <h3 className="text-lg font-medium text-foreground leading-tight">{title}</h3>
-          <p className="text-xs text-muted-foreground mt-1">{formattedDate}</p>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="flex flex-col">
-          <div className="flex items-center text-muted-foreground mb-1">
-            <Clock className="w-3.5 h-3.5 mr-1.5" />
-            <span className="text-xs">Time</span>
-          </div>
-          <span className="text-sm font-medium">{duration} min</span>
+          <h3 className="text-lg font-medium mb-1">{title}</h3>
+          <p className="text-xs text-muted-foreground">{formattedDate}</p>
         </div>
         
-        <div className="flex flex-col">
-          <div className="flex items-center text-muted-foreground mb-1">
-            <Flame className="w-3.5 h-3.5 mr-1.5" />
-            <span className="text-xs">Calories</span>
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="flex flex-col">
+            <div className="flex items-center text-muted-foreground mb-1">
+              <Clock className="w-3.5 h-3.5 mr-1.5" />
+              <span className="text-xs">Time</span>
+            </div>
+            <span className="text-sm font-medium">{duration} min</span>
           </div>
-          <span className="text-sm font-medium">{calories}</span>
+          
+          <div className="flex flex-col">
+            <div className="flex items-center text-muted-foreground mb-1">
+              <Flame className="w-3.5 h-3.5 mr-1.5" />
+              <span className="text-xs">Calories</span>
+            </div>
+            <span className="text-sm font-medium">{calories}</span>
+          </div>
+          
+          <div className="flex flex-col">
+            <div className="flex items-center text-muted-foreground mb-1">
+              <Activity className="w-3.5 h-3.5 mr-1.5" />
+              <span className="text-xs">Exercises</span>
+            </div>
+            <span className="text-sm font-medium">{exercises}</span>
+          </div>
         </div>
         
-        <div className="flex flex-col">
-          <div className="flex items-center text-muted-foreground mb-1">
-            <Activity className="w-3.5 h-3.5 mr-1.5" />
-            <span className="text-xs">Exercises</span>
-          </div>
-          <span className="text-sm font-medium">{exercises}</span>
+        <div className="flex justify-end">
+          <button className="flex items-center text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors">
+            <span>{completed ? "View Details" : "Start Workout"}</span>
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
         </div>
-      </div>
-      
-      <div className="flex justify-end">
-        <button className="flex items-center text-xs font-medium text-fitness-accent transition-colors hover:text-fitness-black">
-          <span>{completed ? "View Details" : "Start Workout"}</span>
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </button>
       </div>
     </div>
   );

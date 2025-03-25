@@ -10,6 +10,11 @@ import Workouts from "./pages/Workouts";
 import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
 
+// This is a placeholder for the Goals page that we'll create
+const Goals = () => <div className="pt-16 pb-24 md:pb-6 px-4">Goals page coming soon</div>;
+// This is a placeholder for the Profile page that we'll create
+const Profile = () => <div className="pt-16 pb-24 md:pb-6 px-4">Profile page coming soon</div>;
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -23,6 +28,8 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/progress" element={<Progress />} />
+          <Route path="/goals" element={<Goals />} />
+          <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
