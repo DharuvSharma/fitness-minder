@@ -9,6 +9,9 @@ import lombok.Data;
  * Data Transfer Object (DTO) for login requests.
  * This class captures user credentials from the login form.
  * It uses validation annotations to ensure data integrity.
+ * 
+ * The validation annotations (@NotBlank, @Email) provide automatic
+ * input validation when this object is bound to HTTP requests with @Valid.
  */
 @Data // Lombok annotation that automatically generates getters, setters, equals, hashCode, and toString methods
 public class LoginRequest {

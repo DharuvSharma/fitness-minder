@@ -3,17 +3,30 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { jwtDecode } from 'jwt-decode';
 
-// Create an axios instance with default config
+/**
+ * Create an axios instance with default configuration.
+ * 
+ * This instance:
+ * - Has a base URL pointing to the backend API
+ * - Sets default timeout and headers
+ * - Will be used for all API requests
+ */
 const api = axios.create({
   // Update baseURL to point to the Spring Boot backend
   baseURL: 'http://localhost:8080/api', 
-  timeout: 10000,
+  timeout: 10000, // Request timeout in milliseconds
   headers: {
     'Content-Type': 'application/json',
   }
 });
 
-// Request interceptor for adding auth token
+/**
+ * Request interceptor for adding authentication token.
+ * 
+ * This interceptor:
+ * - Runs before each request
+ * - Adds the JWT token from localStorage to the Authorization header if available
+ */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
@@ -25,9 +38,16 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for handling common errors
+/**
+ * Response interceptor for handling common errors.
+ * 
+ * This interceptor:
+ * - Runs after each response or error
+ * - Handles common HTTP errors with appropriate messages
+ * - Handles authentication errors by redirecting to login
+ */
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response, // Return successful responses unchanged
   (error) => {
     // Handle network errors
     if (!error.response) {
@@ -68,18 +88,38 @@ api.interceptors.response.use(
   }
 );
 
-// Function to check if JWT token is expired
+/**
+ * Function to check if JWT token is expired.
+ * 
+ * This function:
+ * - Decodes the JWT token
+ * - Checks if the expiration time is in the past
+ * 
+ * @param token The JWT token to check
+ * @return True if token is expired, false otherwise
+ */
 const isTokenExpired = (token: string) => {
   try {
     const decoded: any = jwtDecode(token);
-    return decoded.exp * 1000 < Date.now();
+    return decoded.exp * 1000 < Date.now(); // Compare expiration timestamp with current time
   } catch (error) {
-    return true;
+    return true; // If token can't be decoded, consider it expired
   }
 };
 
-// Auth related functions
+// --- Authentication Service ---
 export const authService = {
+  /**
+   * Authenticates a user with email and password.
+   * 
+   * This function:
+   * 1. Sends login credentials to the backend
+   * 2. Stores the JWT token on success
+   * 3. Returns the user data
+   * 
+   * @param credentials User credentials (email, password)
+   * @return User data on successful login
+   */
   login: async (credentials: { email: string; password: string }) => {
     try {
       const response = await api.post('/auth/login', credentials);
@@ -96,6 +136,16 @@ export const authService = {
     }
   },
   
+  /**
+   * Registers a new user.
+   * 
+   * This function:
+   * 1. Sends registration data to the backend
+   * 2. Shows success message on completion
+   * 
+   * @param userData User registration data (name, email, password)
+   * @return API response data
+   */
   register: async (userData: { name: string; email: string; password: string }) => {
     try {
       const response = await api.post('/auth/register', userData);
@@ -107,11 +157,26 @@ export const authService = {
     }
   },
   
+  /**
+   * Logs out the current user.
+   * 
+   * This function:
+   * 1. Removes the JWT token from localStorage
+   * 2. Redirects to the login page
+   */
   logout: () => {
     localStorage.removeItem('auth_token');
     window.location.href = '/login';
   },
   
+  /**
+   * Fetches current user data from the API.
+   * 
+   * This function:
+   * - Makes an authenticated request to get user information
+   * 
+   * @return Current user data
+   */
   getCurrentUserData: async () => {
     try {
       const response = await api.get('/user/me');
@@ -122,11 +187,28 @@ export const authService = {
     }
   },
   
+  /**
+   * Checks if the user is authenticated.
+   * 
+   * This function:
+   * - Verifies that a non-expired token exists
+   * 
+   * @return True if authenticated, false otherwise
+   */
   isAuthenticated: () => {
     const token = localStorage.getItem('auth_token');
     return !!token && !isTokenExpired(token);
   },
   
+  /**
+   * Checks if the current token is expired.
+   * 
+   * This function:
+   * - Gets the token from localStorage
+   * - Checks if it's expired
+   * 
+   * @return True if token is expired or missing, false otherwise
+   */
   isTokenExpired: () => {
     const token = localStorage.getItem('auth_token');
     if (!token) return true;

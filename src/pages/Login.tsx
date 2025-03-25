@@ -20,7 +20,13 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
 
-// Define the validation schema for the login form using Zod
+/**
+ * Zod validation schema for login form.
+ * 
+ * This schema defines validation rules for the login form fields:
+ * - email: Must be a valid email format
+ * - password: Must be at least 6 characters long
+ */
 const loginSchema = z.object({
   // Validate that the email is in the correct format
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -28,15 +34,30 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
 });
 
-// Create a TypeScript type from the Zod schema
+// Create a TypeScript type from the Zod schema for form values
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+/**
+ * Login page component.
+ * 
+ * This component provides a form for user authentication and handles:
+ * - Form validation with Zod and React Hook Form
+ * - Authentication via the AuthContext
+ * - Error handling and success notifications
+ * - Redirection after successful login
+ */
 const Login = () => {
   const navigate = useNavigate(); // Hook for programmatic navigation
   const { login, isAuthenticated } = useAuth(); // Get authentication functions from context
   const [error, setError] = useState(''); // State for error messages
   const [isLoading, setIsLoading] = useState(false); // State for loading status
 
+  /**
+   * Effect to redirect authenticated users.
+   * 
+   * If a user is already logged in, they are automatically 
+   * redirected to the dashboard page.
+   */
   useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (isAuthenticated) {
@@ -44,7 +65,11 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]); // Re-run when these dependencies change
 
-  // Initialize the form with React Hook Form and Zod validation
+  /**
+   * Initialize the form with React Hook Form and Zod validation.
+   * 
+   * This sets up form handling with validation rules defined in loginSchema.
+   */
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema), // Connect Zod validation
     defaultValues: {
@@ -53,7 +78,16 @@ const Login = () => {
     },
   });
 
-  // Handle form submission
+  /**
+   * Handle form submission.
+   * 
+   * This function:
+   * 1. Attempts to authenticate the user
+   * 2. Shows success or error notifications
+   * 3. Redirects to dashboard on success
+   * 
+   * @param data The validated form data
+   */
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true); // Show loading state
     setError(''); // Clear any previous errors

@@ -3,33 +3,59 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { authService } from '@/services/apiService';
 import { toast } from 'sonner';
 
-// Define the User type for authenticated users
+/**
+ * Interface defining the structure of a user object.
+ * Contains basic information about an authenticated user.
+ */
 interface User {
-  id: string;
-  name: string;
-  email: string;
+  id: string;    // Unique identifier for the user
+  name: string;  // User's display name
+  email: string; // User's email address
 }
 
-// Define the shape of the authentication context
+/**
+ * Interface defining the shape of the authentication context.
+ * Contains all authentication-related state and functions.
+ */
 interface AuthContextType {
-  user: User | null; // Current user info or null if not logged in
-  isAuthenticated: boolean; // Whether a user is currently authenticated
-  isLoading: boolean; // Whether authentication operations are in progress
-  login: (credentials: { email: string; password: string }) => Promise<void>; // Login function
+  user: User | null;                                                                   // Current user info or null if not logged in
+  isAuthenticated: boolean;                                                            // Whether a user is currently authenticated
+  isLoading: boolean;                                                                  // Whether authentication operations are in progress
+  login: (credentials: { email: string; password: string }) => Promise<void>;          // Login function
   register: (userData: { name: string; email: string; password: string }) => Promise<void>; // Registration function
-  logout: () => void; // Logout function
-  refreshUser: () => Promise<void>; // Function to refresh user data
+  logout: () => void;                                                                  // Logout function
+  refreshUser: () => Promise<void>;                                                    // Function to refresh user data
 }
 
-// Create the context with undefined as initial value
+/**
+ * Create the Authentication Context.
+ * Initially undefined, will be populated by AuthProvider.
+ */
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider component that wraps the application and provides authentication state
+/**
+ * AuthProvider component that wraps the application and provides authentication state.
+ * 
+ * This component:
+ * 1. Manages authentication state (user, loading)
+ * 2. Provides login, register, and logout functionality
+ * 3. Handles token validation and expiration
+ * 4. Refreshes user data when needed
+ * 
+ * @param children The components to be wrapped with authentication context
+ */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null); // State to store the current user
+  const [user, setUser] = useState<User | null>(null);       // State to store the current user
   const [isLoading, setIsLoading] = useState<boolean>(true); // State for loading status
 
-  // Function to fetch user data with the token
+  /**
+   * Function to fetch user data with the stored token.
+   * 
+   * This function:
+   * 1. Checks if a valid token exists
+   * 2. If yes, fetches current user data from the API
+   * 3. If no or error, clears the user state
+   */
   const refreshUser = async () => {
     // If not authenticated, clear user and stop loading
     if (!authService.isAuthenticated()) {
@@ -53,6 +79,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  /**
+   * Effect hook to check authentication status on component mount.
+   * 
+   * This effect:
+   * 1. Runs once when the component mounts
+   * 2. Checks if the user is logged in
+   * 3. Sets up an interval to periodically check token expiration
+   */
   useEffect(() => {
     // Check if user is logged in on component mount
     refreshUser();
@@ -70,7 +104,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(tokenCheckInterval);
   }, []);
 
-  // Function to handle user login
+  /**
+   * Function to handle user login.
+   * 
+   * This function:
+   * 1. Sets loading state
+   * 2. Calls the login API service
+   * 3. Updates user state on success
+   * 
+   * @param credentials The user's login credentials (email, password)
+   */
   const login = async (credentials: { email: string; password: string }) => {
     setIsLoading(true);
     try {
@@ -82,7 +125,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Function to handle user registration
+  /**
+   * Function to handle user registration.
+   * 
+   * This function:
+   * 1. Sets loading state
+   * 2. Calls the register API service
+   * 
+   * @param userData The user registration data (name, email, password)
+   */
   const register = async (userData: { name: string; email: string; password: string }) => {
     setIsLoading(true);
     try {
@@ -93,13 +144,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Function to handle user logout
+  /**
+   * Function to handle user logout.
+   * 
+   * This function:
+   * 1. Calls the logout service to clear tokens
+   * 2. Clears user state
+   */
   const logout = () => {
     authService.logout();
     setUser(null);
   };
 
-  // Provide the authentication context to children components
+  /**
+   * Provide the authentication context to children components.
+   * 
+   * Makes all auth state and functions available to the component tree.
+   */
   return (
     <AuthContext.Provider
       value={{
@@ -117,7 +178,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-// Custom hook to use the authentication context
+/**
+ * Custom hook to use the authentication context.
+ * 
+ * This hook:
+ * 1. Provides easy access to auth context
+ * 2. Ensures context is used within an AuthProvider
+ * 
+ * @returns The authentication context
+ * @throws Error if used outside of AuthProvider
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
