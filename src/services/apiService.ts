@@ -1,6 +1,6 @@
+
 import axios from 'axios';
 import { toast } from 'sonner';
-import { jwtDecode } from 'jwt-decode';
 
 /**
  * Create an axios instance with default configuration.
@@ -12,20 +12,6 @@ const api = axios.create({
     'Content-Type': 'application/json',
   }
 });
-
-/**
- * Request interceptor for adding authentication token.
- */
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 /**
  * Response interceptor for handling common errors.
@@ -41,14 +27,6 @@ api.interceptors.response.use(
     
     try {
       switch (error.response.status) {
-        case 401:
-          localStorage.removeItem('auth_token');
-          window.location.href = '/register';
-          toast.error('Your session has expired. Please register again.');
-          break;
-        case 403:
-          toast.error('You do not have permission to perform this action.');
-          break;
         case 404:
           toast.error('Resource not found.');
           break;
@@ -67,73 +45,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-/**
- * Function to check if JWT token is expired.
- */
-const isTokenExpired = (token: string) => {
-  try {
-    const decoded: any = jwtDecode(token);
-    return decoded.exp * 1000 < Date.now();
-  } catch (error) {
-    return true;
-  }
-};
-
-// --- Authentication Service ---
-export const authService = {
-  /**
-   * Registers a new user.
-   */
-  register: async (userData: { name: string; email: string; password: string }) => {
-    try {
-      const response = await api.post('/auth/register', userData);
-      toast.success('Registration successful!');
-      return response.data;
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Logs out the current user.
-   */
-  logout: () => {
-    localStorage.removeItem('auth_token');
-    window.location.href = '/';
-  },
-  
-  /**
-   * Fetches current user data from the API.
-   */
-  getCurrentUserData: async () => {
-    try {
-      const response = await api.get('/user/me');
-      return response.data;
-    } catch (error) {
-      console.error('Error getting current user data:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Checks if the user is authenticated.
-   */
-  isAuthenticated: () => {
-    const token = localStorage.getItem('auth_token');
-    return !!token && !isTokenExpired(token);
-  },
-  
-  /**
-   * Checks if the current token is expired.
-   */
-  isTokenExpired: () => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return true;
-    return isTokenExpired(token);
-  }
-};
 
 // Workout API functions
 export const workoutApi = {
