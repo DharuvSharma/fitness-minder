@@ -1,4 +1,3 @@
-
 package com.fitness.application.service;
 
 import com.fitness.application.dto.WorkoutDto;
@@ -6,11 +5,13 @@ import com.fitness.application.model.Workout;
 import com.fitness.application.repository.WorkoutRepository;
 import com.fitness.application.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final StreakService streakService;
     
+    @Cacheable(value = "workouts", key = "#user.getId()")
     public List<WorkoutDto> getAllWorkouts(UserDetailsImpl user) {
         return workoutRepository.findByUserIdOrderByDateDesc(user.getId())
                 .stream()
@@ -27,6 +29,7 @@ public class WorkoutService {
                 .collect(Collectors.toList());
     }
     
+    @Cacheable(value = "workouts", key = "#user.getId() + '_range_' + #days")
     public List<WorkoutDto> getWorkoutsByDateRange(UserDetailsImpl user, int days) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(days);
@@ -37,6 +40,7 @@ public class WorkoutService {
                 .collect(Collectors.toList());
     }
     
+    @Cacheable(value = "workouts", key = "#id + '_' + #user.getId()")
     public WorkoutDto getWorkoutById(String id, UserDetailsImpl user) {
         return workoutRepository.findById(id)
                 .filter(workout -> workout.getUserId().equals(user.getId()))
@@ -45,6 +49,7 @@ public class WorkoutService {
     }
     
     @Transactional
+    @CacheEvict(value = "workouts", key = "#user.getId()")
     public WorkoutDto createWorkout(WorkoutDto workoutDto, UserDetailsImpl user) {
         Workout workout = convertToEntity(workoutDto);
         workout.setUserId(user.getId());
@@ -59,6 +64,10 @@ public class WorkoutService {
     }
     
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "workouts", key = "#user.getId()"),
+        @CacheEvict(value = "workouts", key = "#id + '_' + #user.getId()")
+    })
     public WorkoutDto updateWorkout(String id, WorkoutDto workoutDto, UserDetailsImpl user) {
         // Verify workout exists and belongs to user
         Workout existingWorkout = workoutRepository.findById(id)
@@ -90,6 +99,10 @@ public class WorkoutService {
     }
     
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "workouts", key = "#user.getId()"),
+        @CacheEvict(value = "workouts", key = "#id + '_' + #user.getId()")
+    })
     public void deleteWorkout(String id, UserDetailsImpl user) {
         Workout workout = workoutRepository.findById(id)
                 .filter(w -> w.getUserId().equals(user.getId()))
@@ -103,6 +116,11 @@ public class WorkoutService {
         }
     }
     
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "workouts", key = "#user.getId()"),
+        @CacheEvict(value = "workouts", key = "#id + '_' + #user.getId()")
+    })
     public WorkoutDto toggleWorkoutCompletion(String id, UserDetailsImpl user) {
         Workout workout = workoutRepository.findById(id)
                 .filter(w -> w.getUserId().equals(user.getId()))
@@ -121,7 +139,6 @@ public class WorkoutService {
         return convertToDto(savedWorkout);
     }
     
-    // Helper methods for DTO conversion
     private WorkoutDto convertToDto(Workout workout) {
         return WorkoutDto.builder()
                 .id(workout.getId())
