@@ -13,11 +13,22 @@ const api = axios.create({
   }
 });
 
+// Track rate limit status
+let isRateLimited = false;
+let rateLimitRetryTime = 0;
+
 /**
  * Response interceptor for handling common errors.
  */
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Process rate limit headers if present
+    const remainingRequests = response.headers['x-rate-limit-remaining'];
+    if (remainingRequests && parseInt(remainingRequests) < 5) {
+      console.warn(`Rate limit warning: ${remainingRequests} requests remaining`);
+    }
+    return response;
+  },
   (error) => {
     if (!error.response) {
       console.error('Network Error:', error);
@@ -26,6 +37,24 @@ api.interceptors.response.use(
     }
     
     try {
+      // Handle rate limiting errors
+      if (error.response.status === 429) {
+        const retryAfter = error.response.headers['x-rate-limit-retry-after-seconds'];
+        const waitTime = retryAfter ? parseInt(retryAfter) : 60;
+        
+        isRateLimited = true;
+        rateLimitRetryTime = Date.now() + (waitTime * 1000);
+        
+        toast.error(`Rate limit exceeded. Please try again in ${waitTime} seconds.`);
+        
+        // Set a timeout to reset the rate limit flag
+        setTimeout(() => {
+          isRateLimited = false;
+        }, waitTime * 1000);
+        
+        return Promise.reject(error);
+      }
+      
       switch (error.response.status) {
         case 404:
           toast.error('Resource not found.');
@@ -42,6 +71,36 @@ api.interceptors.response.use(
       toast.error('An unexpected error occurred');
     }
     
+    return Promise.reject(error);
+  }
+);
+
+// Add a request interceptor to check rate limit status before making requests
+api.interceptors.request.use(
+  (config) => {
+    if (isRateLimited) {
+      const waitTimeMs = rateLimitRetryTime - Date.now();
+      if (waitTimeMs > 0) {
+        // If still rate limited, reject the request
+        const waitTimeSec = Math.ceil(waitTimeMs / 1000);
+        toast.error(`Rate limit active. Please wait ${waitTimeSec} seconds.`);
+        return Promise.reject(new Error('Rate limited'));
+      } else {
+        // If rate limit time passed, reset the flag
+        isRateLimited = false;
+      }
+    }
+
+    // Set the API version for versioned endpoints
+    // We can conditionally set v1 or v2 based on app requirements
+    // For now, let's use the default v1
+    if (!config.url?.startsWith('/v')) {
+      config.url = '/v1' + config.url;
+    }
+    
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );
