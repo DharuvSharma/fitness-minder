@@ -15,6 +15,7 @@ export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {
   exercises: number;
   date: string;
   completed?: boolean;
+  onUpdate?: () => void; // Add this prop for handling workout updates
 }
 
 const typeConfig: Record<WorkoutType, { color: string, label: string }> = {
@@ -33,6 +34,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   exercises,
   date,
   completed = false,
+  onUpdate,
   className,
   ...props
 }) => {
@@ -42,6 +44,13 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   });
   
   const workoutConfig = typeConfig[type];
+
+  // Handle button click - call onUpdate if provided
+  const handleButtonClick = () => {
+    if (onUpdate) {
+      onUpdate();
+    }
+  };
 
   return (
     <div 
@@ -99,7 +108,10 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
         </div>
         
         <div className="flex justify-end">
-          <button className="flex items-center text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors">
+          <button 
+            className="flex items-center text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
+            onClick={handleButtonClick}
+          >
             <span>{completed ? "View Details" : "Start Workout"}</span>
             <ChevronRight className="w-4 h-4 ml-1" />
           </button>

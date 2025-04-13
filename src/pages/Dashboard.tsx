@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dumbbell, Target, Calendar, Plus, BarChart2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import WorkoutCard from '@/components/WorkoutCard';
+import WorkoutCard, { WorkoutType } from '@/components/WorkoutCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Navbar from '@/components/Navbar';
 import { Progress } from '@/components/ui/progress';
@@ -13,12 +13,12 @@ import {
 } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Tooltip } from 'recharts';
 
-// Mock data for dashboard
+// Mock data for dashboard - fixed types to use WorkoutType
 const recentWorkouts = [
   {
     id: '1',
     title: 'Upper Body Strength',
-    type: 'strength',
+    type: 'strength' as WorkoutType,
     duration: 45,
     calories: 320,
     exercises: 8,
@@ -28,7 +28,7 @@ const recentWorkouts = [
   {
     id: '2',
     title: '5K Morning Run',
-    type: 'cardio',
+    type: 'cardio' as WorkoutType,
     duration: 28,
     calories: 250,
     exercises: 1,
@@ -38,7 +38,7 @@ const recentWorkouts = [
   {
     id: '3',
     title: 'HIIT Circuit',
-    type: 'hiit',
+    type: 'hiit' as WorkoutType,
     duration: 30,
     calories: 400,
     exercises: 6,
