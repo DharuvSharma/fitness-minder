@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -7,7 +8,11 @@ import {
   BarChart,
   Activity,
   Plus,
-  User 
+  User,
+  Dumbbell,
+  Target,
+  Bell,
+  CheckCircle
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import WorkoutCard from '@/components/WorkoutCard';
@@ -19,6 +24,8 @@ import UserProfile from '@/components/UserProfile';
 import AddWorkoutForm from '@/components/AddWorkoutForm';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { workoutService, Workout } from '@/services/workoutService';
 import { goalService, Goal } from '@/services/goalService';
@@ -129,15 +136,24 @@ const Dashboard = () => {
     }
   };
 
+  // Calculate stats for summary
+  const totalWorkouts = recentWorkouts.length;
+  const completedWorkouts = recentWorkouts.filter(w => w.completed).length;
+  const totalDuration = recentWorkouts.reduce((sum, w) => sum + w.duration, 0);
+  const totalGoals = goals.length;
+  const completedGoals = goals.filter(g => g.current >= g.target).length;
+
   return (
-    <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0 md:pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0 md:pt-20">
       <Navbar />
       
-      <div className="fitness-container pt-4 animate-fade-in">
+      <div className="container mx-auto px-4 pt-6 animate-fade-in">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-500 dark:from-indigo-400 dark:to-blue-300">
+              Fitness Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">
               Welcome back! Here's an overview of your fitness journey.
             </p>
           </div>
@@ -146,14 +162,14 @@ const Dashboard = () => {
             <Button 
               variant="outline"
               onClick={() => setIsAddGoalOpen(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50 dark:border-indigo-800 dark:hover:border-indigo-700 dark:hover:bg-indigo-900/30"
             >
-              <Trophy className="h-4 w-4" />
+              <Trophy className="h-4 w-4 text-amber-500" />
               <span>Add Goal</span>
             </Button>
             
             <Button 
-              className="bg-fitness-accent hover:bg-fitness-accent/90"
+              className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700"
               onClick={() => setIsAddWorkoutOpen(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -162,148 +178,320 @@ const Dashboard = () => {
           </div>
         </header>
         
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Workouts</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold">{totalWorkouts}</p>
+                  <p className="text-xs text-muted-foreground">{completedWorkouts} completed</p>
+                </div>
+                <div className="p-2 bg-indigo-100 rounded-full dark:bg-indigo-900/50">
+                  <Dumbbell className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Duration</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold">{totalDuration} min</p>
+                  <p className="text-xs text-muted-foreground">This month</p>
+                </div>
+                <div className="p-2 bg-blue-100 rounded-full dark:bg-blue-900/50">
+                  <CalendarDays className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Goals</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold">{totalGoals}</p>
+                  <p className="text-xs text-muted-foreground">{completedGoals} achieved</p>
+                </div>
+                <div className="p-2 bg-amber-100 rounded-full dark:bg-amber-900/50">
+                  <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Streak</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold">7 days</p>
+                  <p className="text-xs text-muted-foreground">Current streak</p>
+                </div>
+                <div className="p-2 bg-green-100 rounded-full dark:bg-green-900/50">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
         <Tabs defaultValue="overview" className="mb-6">
-          <TabsList className="mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsList className="mb-6 p-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-indigo-400"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analytics" 
+              className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-indigo-400"
+            >
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger 
+              value="profile" 
+              className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-indigo-400"
+            >
+              Profile
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="overview" className="animate-fade-in">
-            {/* Quick Stats - First Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <AdvancedAnalytics 
-                workouts={recentWorkouts} 
-                dateRange="the last 30 days" 
-              />
-            </div>
+          <TabsContent value="overview" className="animate-fade-in space-y-6">
+            {/* First Row - Analytics */}
+            <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+              <CardContent className="p-4">
+                <AdvancedAnalytics 
+                  workouts={recentWorkouts} 
+                  dateRange="the last 30 days" 
+                />
+              </CardContent>
+            </Card>
             
             {/* Second Row - Progress Chart and Goals */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="md:col-span-2">
-                <ProgressChart 
-                  data={progressData}
-                  title="Workout Intensity"
-                  metric="Intensity Level"
-                  color="#61DAFB"
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="md:col-span-2 border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-xl font-semibold">Workout Intensity</CardTitle>
+                  <CardDescription>Your progress over time</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <ProgressChart 
+                    data={progressData}
+                    title="Workout Intensity"
+                    metric="Intensity Level"
+                    color="#6366f1"
+                  />
+                </CardContent>
+              </Card>
               
-              <div className="md:col-span-1">
-                <AchievementTracker 
-                  goals={goals} 
-                  onCreateGoal={() => setIsAddGoalOpen(true)}
-                />
-              </div>
+              <Card className="md:col-span-1 border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-xl font-semibold flex items-center">
+                    <Trophy className="w-5 h-5 mr-2 text-amber-500" />
+                    Goals & Achievements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <AchievementTracker 
+                    goals={goals} 
+                    onCreateGoal={() => setIsAddGoalOpen(true)}
+                  />
+                </CardContent>
+              </Card>
             </div>
             
             {/* Third Row - Recent Workouts */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold flex items-center">
-                  <Activity className="w-5 h-5 mr-2 text-[#61DAFB]" />
-                  Recent Workouts
-                </h2>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate('/workouts')}
-                  className="text-sm text-[#61DAFB] hover:text-[#61DAFB]/80"
-                >
-                  View All
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+              <CardHeader className="p-4 pb-0">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl font-semibold flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-indigo-500" />
+                    Recent Workouts
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => navigate('/workouts')}
+                    className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  >
+                    View All
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
                 {isLoading ? (
-                  <div className="col-span-4 text-center py-8">
+                  <div className="text-center py-8">
                     <p className="text-muted-foreground">Loading workouts...</p>
                   </div>
                 ) : recentWorkouts.length > 0 ? (
-                  recentWorkouts.slice(0, 4).map((workout, index) => (
-                    <WorkoutCard
-                      key={workout.id}
-                      {...workout}
-                      className="animate-scale-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                      onUpdate={handleWorkoutUpdate}
-                    />
-                  ))
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {recentWorkouts.slice(0, 4).map((workout, index) => (
+                      <WorkoutCard
+                        key={workout.id}
+                        {...workout}
+                        className="animate-scale-in hover:shadow-md transition-all"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                        onUpdate={handleWorkoutUpdate}
+                      />
+                    ))}
+                  </div>
                 ) : (
-                  <div className="col-span-4 text-center py-8">
+                  <div className="text-center py-8">
                     <p className="text-muted-foreground">No recent workouts found.</p>
                     <Button 
                       variant="link" 
                       onClick={() => setIsAddWorkoutOpen(true)}
-                      className="mt-2"
+                      className="mt-2 text-indigo-600 dark:text-indigo-400"
                     >
                       Add your first workout
                     </Button>
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </TabsContent>
           
-          <TabsContent value="analytics" className="animate-fade-in">
-            <div className="grid grid-cols-1 gap-6">
-              {/* Workout Analytics by Type */}
-              <WorkoutAnalytics workouts={recentWorkouts} period="week" />
+          <TabsContent value="analytics" className="animate-fade-in space-y-6">
+            {/* Workout Analytics by Type */}
+            <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+              <CardHeader className="p-4 pb-0">
+                <CardTitle className="text-xl font-semibold">Workout Analytics</CardTitle>
+                <CardDescription>Breakdown by workout type</CardDescription>
+              </CardHeader>
+              <CardContent className="p-4">
+                <WorkoutAnalytics workouts={recentWorkouts} period="week" />
+              </CardContent>
+            </Card>
+            
+            {/* Visualize progress over time */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-lg font-semibold">Calories Burned</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <ProgressChart 
+                    data={progressData}
+                    title="Calories Burned"
+                    metric="Calories"
+                    color="#ef4444"
+                  />
+                </CardContent>
+              </Card>
               
-              {/* Visualize progress over time */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ProgressChart 
-                  data={progressData}
-                  title="Calories Burned"
-                  metric="Calories"
-                  color="#ef4444"
-                />
-                
-                <ProgressChart 
-                  data={[
-                    { date: '01/01', value: 2 },
-                    { date: '01/08', value: 3 },
-                    { date: '01/15', value: 2 },
-                    { date: '01/22', value: 4 },
-                    { date: '01/29', value: 3 },
-                    { date: '02/05', value: 5 },
-                    { date: '02/12', value: 4 },
-                  ]}
-                  title="Workout Frequency"
-                  metric="Workouts per Week"
-                  color="#8b5cf6"
-                />
-              </div>
+              <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-lg font-semibold">Workout Frequency</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <ProgressChart 
+                    data={[
+                      { date: '01/01', value: 2 },
+                      { date: '01/08', value: 3 },
+                      { date: '01/15', value: 2 },
+                      { date: '01/22', value: 4 },
+                      { date: '01/29', value: 3 },
+                      { date: '02/05', value: 5 },
+                      { date: '02/12', value: 4 },
+                    ]}
+                    title="Workout Frequency"
+                    metric="Workouts per Week"
+                    color="#8b5cf6"
+                  />
+                </CardContent>
+              </Card>
             </div>
+            
+            {/* Workout Summary Table */}
+            <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+              <CardHeader className="p-4 pb-0">
+                <CardTitle className="text-xl font-semibold">Workout Summary</CardTitle>
+                <CardDescription>Last 7 workouts</CardDescription>
+              </CardHeader>
+              <CardContent className="p-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead>Calories</TableHead>
+                      <TableHead className="text-right">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentWorkouts.slice(0, 7).map((workout) => (
+                      <TableRow key={workout.id}>
+                        <TableCell>{new Date(workout.date).toLocaleDateString()}</TableCell>
+                        <TableCell className="capitalize">{workout.type}</TableCell>
+                        <TableCell>{workout.duration} min</TableCell>
+                        <TableCell>{workout.calories}</TableCell>
+                        <TableCell className="text-right">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            workout.completed 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                              : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                          }`}>
+                            {workout.completed ? 'Completed' : 'Planned'}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="profile" className="animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <UserProfile />
+              <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+                <CardContent className="p-4">
+                  <UserProfile />
+                </CardContent>
+              </Card>
               
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <User className="h-5 w-5 mr-2 text-[#61DAFB]" />
-                  Account Settings
-                </h2>
-                <p className="text-gray-500 mb-4">
-                  Manage your account settings, preferences, and data.
-                </p>
-                
-                <div className="space-y-4">
-                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/profile')}>
-                    Edit Profile
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    Connect Fitness Devices
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    Privacy Settings
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    Export Data
-                  </Button>
-                </div>
-              </div>
+              <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-xl font-semibold flex items-center">
+                    <User className="h-5 w-5 mr-2 text-indigo-500" />
+                    Account Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your account settings, preferences, and data.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-2">
+                  <div className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-900/30" onClick={() => navigate('/profile')}>
+                      Edit Profile
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+                      Connect Fitness Devices
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+                      Privacy Settings
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+                      Export Data
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
