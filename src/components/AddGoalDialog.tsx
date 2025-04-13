@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -52,12 +53,35 @@ const goalFormSchema = z.object({
 type GoalFormValues = z.infer<typeof goalFormSchema>;
 
 interface AddGoalDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onGoalAdded?: () => void;
+  onSave?: (data: GoalFormValues) => Promise<void>;
 }
 
-const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onGoalAdded }) => {
-  const [open, setOpen] = React.useState(false);
+const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ 
+  open, 
+  onOpenChange,
+  onGoalAdded,
+  onSave
+}) => {
+  const [isOpen, setIsOpen] = React.useState(open || false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  
+  // Update internal state when prop changes
+  React.useEffect(() => {
+    if (open !== undefined) {
+      setIsOpen(open);
+    }
+  }, [open]);
+
+  // Handle dialog state change
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsOpen(newOpen);
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    }
+  };
   
   const defaultValues: Partial<GoalFormValues> = {
     title: "",
@@ -76,20 +100,26 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onGoalAdded }) => {
   const onSubmit = async (data: GoalFormValues) => {
     setIsSubmitting(true);
     try {
-      // Ensure all required fields are present before calling addGoal
-      const goalData = {
-        title: data.title,
-        description: data.description,
-        target: data.target,
-        current: data.current,
-        type: data.type,
-        deadline: data.deadline,
-      };
+      if (onSave) {
+        // Use the onSave prop if provided
+        await onSave(data);
+      } else {
+        // Default behavior
+        const goalData = {
+          title: data.title,
+          description: data.description,
+          target: data.target,
+          current: data.current,
+          type: data.type,
+          deadline: data.deadline,
+        };
+        
+        await goalService.addGoal(goalData);
+      }
       
-      await goalService.addGoal(goalData);
       toast.success("Goal created successfully");
       form.reset(defaultValues);
-      setOpen(false);
+      handleOpenChange(false);
       if (onGoalAdded) onGoalAdded();
     } catch (error) {
       console.error("Failed to create goal:", error);
@@ -100,7 +130,7 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onGoalAdded }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>Add New Goal</Button>
       </DialogTrigger>
