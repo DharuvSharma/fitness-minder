@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { WorkoutType } from '@/types';
+import { WorkoutFormData, WorkoutType } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -46,7 +47,7 @@ const workoutFormSchema = z.object({
   }),
   exercises: z.coerce.number().min(1, {
     message: "Must have at least 1 exercise.",
-  }),
+  }).optional(),
   date: z.string(),
   notes: z.string().optional(),
 });
@@ -56,7 +57,7 @@ type WorkoutFormValues = z.infer<typeof workoutFormSchema>;
 interface AddWorkoutFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (workout: WorkoutFormValues) => void;
+  onSave: (workout: WorkoutFormData) => void;
 }
 
 const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({ 
@@ -81,7 +82,13 @@ const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({
   });
 
   const onSubmit = (data: WorkoutFormValues) => {
-    onSave(data);
+    // Convert to the expected WorkoutFormData format
+    const workoutData: WorkoutFormData = {
+      ...data,
+      exercises: data.exercises?.toString(),
+    };
+    
+    onSave(workoutData);
     form.reset();
     onOpenChange(false);
     
