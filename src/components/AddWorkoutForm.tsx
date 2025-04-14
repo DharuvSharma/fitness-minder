@@ -82,10 +82,15 @@ const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({
   });
 
   const onSubmit = (data: WorkoutFormValues) => {
-    // Convert to the expected WorkoutFormData format
+    // Convert to the expected WorkoutFormData format with all required properties explicitly set
     const workoutData: WorkoutFormData = {
-      ...data,
+      title: data.title,
+      type: data.type,
+      duration: data.duration,
+      calories: data.calories,
+      date: data.date,
       exercises: data.exercises?.toString(),
+      notes: data.notes,
     };
     
     onSave(workoutData);
