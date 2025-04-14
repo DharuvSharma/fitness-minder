@@ -1,54 +1,99 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Auth } from 'aws-amplify';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
+import ForgotPassword from './pages/ForgotPassword';
+import ForgotPasswordSubmit from './pages/ForgotPasswordSubmit';
+import VerifyEmail from './pages/VerifyEmail';
+import Dashboard from './pages/Dashboard';
+import Workouts from './pages/Workouts';
+import Profile from './pages/Profile';
+import { Authenticator } from '@aws-amplify/ui-react';
+import { Amplify } from 'aws-amplify';
+import awsExports from './aws-exports';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import WorkoutHistory from './pages/WorkoutHistory';
+import WorkoutCalendarView from './pages/WorkoutCalendarView';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { MobileNavbar } from "@/components/MobileNavbar";
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Workouts from "./pages/Workouts";
-import Progress from "./pages/Progress";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
+Amplify.configure(awsExports);
 
-// This is a placeholder for the Goals page that we'll create
-const Goals = () => <div className="pt-16 pb-24 md:pb-6 px-4">Goals page coming soon</div>;
-// This is a placeholder for the Profile page that we'll create
-const Profile = () => <div className="pt-16 pb-24 md:pb-6 px-4">Profile page coming soon</div>;
-// This is a placeholder for the Register page
-const Register = () => <div className="pt-16 pb-24 md:pb-6 px-4">Register page coming soon</div>;
-// This is a placeholder for the Forgot Password page
-const ForgotPassword = () => <div className="pt-16 pb-24 md:pb-6 px-4">Forgot Password page coming soon</div>;
+interface AuthState {
+  isAuthenticated: boolean | null;
+  loading: boolean;
+}
 
-const queryClient = new QueryClient();
+function App() {
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: null,
+    loading: true,
+  });
 
-const App = () => (
-  <ThemeProvider defaultTheme="system" storageKey="fitness-theme">
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/workouts" element={<Workouts />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/goals" element={<Goals />} />
-            <Route path="/profile" element={<Profile />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <MobileNavbar />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
-  </ThemeProvider>
-);
+  useEffect(() => {
+    checkAuthState();
+  }, []);
+
+  const checkAuthState = async () => {
+    try {
+      await Auth.currentSession();
+      setAuthState({ isAuthenticated: true, loading: false });
+    } catch (error) {
+      setAuthState({ isAuthenticated: false, loading: false });
+    }
+  };
+
+  const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+    if (authState.loading) {
+      return <div>Loading...</div>;
+    }
+
+    return authState.isAuthenticated ? (
+      children
+    ) : (
+      <Navigate to="/signin" replace />
+    );
+  };
+
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="fitness-theme">
+      <Router>
+        <Routes>
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/forgot-password-submit" element={<ForgotPasswordSubmit />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/profile" element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          } />
+          <Route path="/" element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/workouts" element={
+            <PrivateRoute>
+              <Workouts />
+            </PrivateRoute>
+          } />
+          
+          {/* Add the new routes inside the existing Routes component */}
+          <Route path="/workout-history" element={
+            <PrivateRoute>
+              <WorkoutHistory />
+            </PrivateRoute>
+          } />
+          <Route path="/workout-calendar" element={
+            <PrivateRoute>
+              <WorkoutCalendarView />
+            </PrivateRoute>
+          } />
+        </Routes>
+      </Router>
+    </ThemeProvider>
+  );
+}
 
 export default App;

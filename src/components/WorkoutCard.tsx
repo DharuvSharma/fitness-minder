@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, Flame, Activity, ChevronRight, Check } from 'lucide-react';
+import { Clock, Flame, Activity, ChevronRight, Check, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { WorkoutType } from '@/types';
 
@@ -13,7 +13,9 @@ export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {
   exercises: number;
   date: string;
   completed?: boolean;
-  onUpdate?: () => void; // Add this prop for handling workout updates
+  onUpdate?: () => void;
+  onEdit?: (workout: Workout) => void;
+  onDelete?: (id: string) => void;
 }
 
 const typeConfig: Record<WorkoutType, { color: string, label: string }> = {
@@ -36,7 +38,10 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   date,
   completed = false,
   onUpdate,
+  onEdit,
+  onDelete,
   className,
+  style,
   ...props
 }) => {
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
@@ -59,6 +64,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
         "bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow",
         className
       )}
+      style={style}
       {...props}
     >
       <div className="relative">
@@ -118,6 +124,43 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
           </button>
         </div>
       </div>
+
+      {onEdit && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onEdit({ id, title, type, duration, calories, exercises, date, completed, notes })}
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+      )}
+      {onDelete && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Trash2 className="h-4 w-4 text-red-500" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Workout?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete "{title}". This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => onDelete(id)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 };

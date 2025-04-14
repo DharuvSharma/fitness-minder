@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -14,13 +13,17 @@ interface RecentWorkoutsProps {
   isLoading: boolean;
   onUpdate: () => void;
   onAddWorkout: () => void;
+  onViewHistory?: () => void;
+  onViewCalendar?: () => void;
 }
 
 const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({ 
   workouts, 
   isLoading, 
   onUpdate, 
-  onAddWorkout 
+  onAddWorkout, 
+  onViewHistory,
+  onViewCalendar
 }) => {
   const navigate = useNavigate();
   
@@ -48,6 +51,28 @@ const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({
             <Activity className="w-5 h-5 mr-2 text-indigo-500" />
             Recent Workouts
           </CardTitle>
+          {onViewHistory && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onViewHistory}
+              className="ml-auto"
+            >
+              <ListFilter className="h-4 w-4 mr-2" />
+              View History
+            </Button>
+          )}
+          {onViewCalendar && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onViewCalendar}
+              className="ml-2"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Calendar
+            </Button>
+          )}
           <Button 
             variant="ghost" 
             onClick={() => navigate('/workouts')}

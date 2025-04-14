@@ -48,6 +48,32 @@ export const useGoals = () => {
     }
   };
 
+  const updateGoal = async (id: string, goalData: Partial<Goal>) => {
+    try {
+      const updatedGoal = await goalService.updateGoal(id, goalData);
+      await fetchGoals(); // Refresh the list after update
+      toast.success('Goal updated successfully!');
+      return updatedGoal;
+    } catch (error) {
+      console.error('Failed to update goal:', error);
+      toast.error('Could not update goal. Please try again.');
+      throw error;
+    }
+  };
+
+  const deleteGoal = async (id: string) => {
+    try {
+      await goalService.deleteGoal(id);
+      await fetchGoals(); // Refresh the list after deletion
+      toast.success('Goal deleted successfully!');
+      return true;
+    } catch (error) {
+      console.error('Failed to delete goal:', error);
+      toast.error('Could not delete goal. Please try again.');
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchGoals();
   }, []);
@@ -56,6 +82,8 @@ export const useGoals = () => {
     goals,
     isLoading,
     fetchGoals,
-    addGoal
+    addGoal,
+    updateGoal,
+    deleteGoal
   };
 };

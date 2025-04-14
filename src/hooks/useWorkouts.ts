@@ -50,6 +50,32 @@ export const useWorkouts = (days = 30) => {
     }
   };
 
+  const updateWorkout = async (id: string, workoutData: Partial<Workout>) => {
+    try {
+      const updatedWorkout = await workoutService.updateWorkout(id, workoutData);
+      await fetchWorkouts(); // Refresh the list after update
+      toast.success('Workout updated successfully!');
+      return updatedWorkout;
+    } catch (error) {
+      console.error('Failed to update workout:', error);
+      toast.error('Could not update workout. Please try again.');
+      throw error;
+    }
+  };
+
+  const deleteWorkout = async (id: string) => {
+    try {
+      await workoutService.deleteWorkout(id);
+      await fetchWorkouts(); // Refresh the list after deletion
+      toast.success('Workout deleted successfully!');
+      return true;
+    } catch (error) {
+      console.error('Failed to delete workout:', error);
+      toast.error('Could not delete workout. Please try again.');
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchWorkouts();
   }, [days]);
@@ -58,6 +84,8 @@ export const useWorkouts = (days = 30) => {
     workouts,
     isLoading,
     fetchWorkouts,
-    addWorkout
+    addWorkout,
+    updateWorkout,
+    deleteWorkout
   };
 };

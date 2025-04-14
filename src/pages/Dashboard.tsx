@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -262,7 +261,9 @@ const Dashboard = () => {
                     workouts={workouts} 
                     isLoading={workoutsLoading} 
                     onUpdate={fetchWorkouts} 
-                    onAddWorkout={() => setIsAddWorkoutOpen(true)} 
+                    onAddWorkout={() => setIsAddWorkoutOpen(true)}
+                    onViewHistory={() => navigate('/workout-history')}
+                    onViewCalendar={() => navigate('/workout-calendar')}
                   />
                 </motion.div>
               </TabsContent>
