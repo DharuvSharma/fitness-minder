@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -213,7 +214,8 @@ const Dashboard = () => {
                               <TooltipContent>
                                 <p>This chart shows your workout intensity over time</p>
                               </TooltipContent>
-                            </TooltipProvider>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                         <CardDescription>Your progress over time</CardDescription>
                       </CardHeader>
