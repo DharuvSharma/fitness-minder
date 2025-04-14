@@ -1,5 +1,5 @@
 
-export type WorkoutType = 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'balance' | 'sport' | 'other';
+export type WorkoutType = 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'balance';
 
 export interface Workout {
   id: string;
@@ -7,10 +7,19 @@ export interface Workout {
   type: WorkoutType;
   duration: number;
   calories: number;
-  exercises: number;
   date: string;
   completed: boolean;
+  exercises?: string;
   notes?: string;
 }
 
-export type WorkoutFormData = Omit<Workout, 'id' | 'completed'>;
+export interface WorkoutFormData {
+  title: string;
+  type: WorkoutType;
+  duration: number;
+  calories: number;
+  date: string;
+  exercises?: string;
+  notes?: string;
+  completed?: boolean;
+}

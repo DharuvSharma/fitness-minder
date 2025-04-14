@@ -1,46 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { Auth } from 'aws-amplify';
-import SignIn from './pages/SignIn';
-import SignUp from './pages/SignUp';
-import ForgotPassword from './pages/ForgotPassword';
-import ForgotPasswordSubmit from './pages/ForgotPasswordSubmit';
-import VerifyEmail from './pages/VerifyEmail';
 import Dashboard from './pages/Dashboard';
 import Workouts from './pages/Workouts';
-import Profile from './pages/Profile';
-import { Authenticator } from '@aws-amplify/ui-react';
-import { Amplify } from 'aws-amplify';
-import awsExports from './aws-exports';
+import Login from './pages/Login';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import WorkoutHistory from './pages/WorkoutHistory';
 import WorkoutCalendarView from './pages/WorkoutCalendarView';
-
-Amplify.configure(awsExports);
-
-interface AuthState {
-  isAuthenticated: boolean | null;
-  loading: boolean;
-}
+import Progress from './pages/Progress';
+import { Toaster } from '@/components/ui/sonner';
 
 function App() {
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: null,
-    loading: true,
+  const [authState, setAuthState] = useState({
+    isAuthenticated: true, // Set to true for now, will be replaced by actual auth later
+    loading: false,
   });
-
-  useEffect(() => {
-    checkAuthState();
-  }, []);
-
-  const checkAuthState = async () => {
-    try {
-      await Auth.currentSession();
-      setAuthState({ isAuthenticated: true, loading: false });
-    } catch (error) {
-      setAuthState({ isAuthenticated: false, loading: false });
-    }
-  };
 
   const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
     if (authState.loading) {
@@ -50,7 +24,7 @@ function App() {
     return authState.isAuthenticated ? (
       children
     ) : (
-      <Navigate to="/signin" replace />
+      <Navigate to="/login" replace />
     );
   };
 
@@ -58,14 +32,10 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="fitness-theme">
       <Router>
         <Routes>
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/forgot-password-submit" element={<ForgotPasswordSubmit />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/profile" element={
             <PrivateRoute>
-              <Profile />
+              <div>Profile Page</div>
             </PrivateRoute>
           } />
           <Route path="/" element={
@@ -79,7 +49,6 @@ function App() {
             </PrivateRoute>
           } />
           
-          {/* Add the new routes inside the existing Routes component */}
           <Route path="/workout-history" element={
             <PrivateRoute>
               <WorkoutHistory />
@@ -90,8 +59,14 @@ function App() {
               <WorkoutCalendarView />
             </PrivateRoute>
           } />
+          <Route path="/progress" element={
+            <PrivateRoute>
+              <Progress />
+            </PrivateRoute>
+          } />
         </Routes>
       </Router>
+      <Toaster />
     </ThemeProvider>
   );
 }

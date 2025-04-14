@@ -1,167 +1,164 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { Clock, Flame, Activity, ChevronRight, Check, Edit, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { WorkoutType } from '@/types';
 
-export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  id: string;
-  title: string;
-  type: WorkoutType;
-  duration: number; // in minutes
-  calories: number;
-  exercises: number;
-  date: string;
-  completed?: boolean;
-  onUpdate?: () => void;
+import React from 'react';
+import { format } from 'date-fns';
+import { 
+  ActivityIcon, 
+  ClockIcon, 
+  FlameIcon, 
+  CheckCircleIcon,
+  EditIcon,
+  Trash2Icon
+} from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Workout, WorkoutType } from '@/types';
+
+interface WorkoutCardProps {
+  workout: Workout;
   onEdit?: (workout: Workout) => void;
   onDelete?: (id: string) => void;
+  onComplete?: (id: string, completed: boolean) => void;
 }
 
-const typeConfig: Record<WorkoutType, { color: string, label: string }> = {
-  strength: { color: 'bg-blue-50 text-blue-600', label: 'Strength' },
-  cardio: { color: 'bg-red-50 text-red-600', label: 'Cardio' },
-  flexibility: { color: 'bg-purple-50 text-purple-600', label: 'Flexibility' },
-  hiit: { color: 'bg-orange-50 text-orange-600', label: 'HIIT' },
-  balance: { color: 'bg-emerald-50 text-emerald-600', label: 'Balance' },
-  sport: { color: 'bg-amber-50 text-amber-600', label: 'Sport' },
-  other: { color: 'bg-gray-50 text-gray-600', label: 'Other' }
-};
-
-const WorkoutCard: React.FC<WorkoutCardProps> = ({
-  id,
-  title,
-  type,
-  duration,
-  calories,
-  exercises,
-  date,
-  completed = false,
-  onUpdate,
-  onEdit,
+const WorkoutCard: React.FC<WorkoutCardProps> = ({ 
+  workout, 
+  onEdit, 
   onDelete,
-  className,
-  style,
-  ...props
+  onComplete 
 }) => {
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
+  const { id, title, type, duration, calories, date, completed, notes } = workout;
   
-  const workoutConfig = typeConfig[type];
+  // Get background color based on workout type
+  const getTypeColor = (type: WorkoutType) => {
+    switch (type) {
+      case 'strength':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'cardio':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'hiit':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'flexibility':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'balance':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
 
-  // Handle button click - call onUpdate if provided
-  const handleButtonClick = () => {
-    if (onUpdate) {
-      onUpdate();
+  const handleCompleteToggle = () => {
+    if (onComplete) {
+      onComplete(id, !completed);
     }
   };
 
   return (
-    <div 
-      className={cn(
-        "bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow",
-        className
-      )}
-      style={style}
-      {...props}
-    >
-      <div className="relative">
-        <div className="absolute top-0 right-0">
-          <div className={cn(
-            "w-6 h-6 rounded-full flex items-center justify-center",
-            completed ? "bg-green-500" : "bg-gray-200"
-          )}>
-            {completed && <Check className="w-3.5 h-3.5 text-white" />}
+    <Card className={`border-l-4 transition-all ${
+      completed ? 'border-l-green-500' : 'border-l-amber-500'
+    } hover:shadow-md`}>
+      <CardHeader className="p-4 pb-0">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-semibold text-lg tracking-tight">{title}</h3>
+            <p className="text-sm text-muted-foreground">{format(new Date(date), 'EEEE, MMMM d, yyyy')}</p>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className={`px-2 py-1 rounded-full text-xs capitalize ${getTypeColor(type)}`}>
+              {type}
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="p-4 pt-2">
+        <div className="flex flex-wrap gap-3 mt-1">
+          <div className="flex items-center text-sm">
+            <ClockIcon className="h-4 w-4 mr-1 text-muted-foreground" />
+            <span>{duration} min</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <FlameIcon className="h-4 w-4 mr-1 text-red-500" />
+            <span>{calories} cal</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <ActivityIcon className="h-4 w-4 mr-1 text-indigo-500" />
+            <span>{workout.exercises || '—'}</span>
           </div>
         </div>
         
-        <div className="mb-4">
-          <span className={cn(
-            "inline-block px-2.5 py-0.5 text-xs font-medium rounded-full mb-2",
-            workoutConfig.color
-          )}>
-            {workoutConfig.label}
-          </span>
-          <h3 className="text-lg font-medium mb-1">{title}</h3>
-          <p className="text-xs text-muted-foreground">{formattedDate}</p>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="flex flex-col">
-            <div className="flex items-center text-muted-foreground mb-1">
-              <Clock className="w-3.5 h-3.5 mr-1.5" />
-              <span className="text-xs">Time</span>
-            </div>
-            <span className="text-sm font-medium">{duration} min</span>
+        {notes && (
+          <div className="mt-3 text-sm text-muted-foreground">
+            <p>{notes}</p>
           </div>
-          
-          <div className="flex flex-col">
-            <div className="flex items-center text-muted-foreground mb-1">
-              <Flame className="w-3.5 h-3.5 mr-1.5" />
-              <span className="text-xs">Calories</span>
-            </div>
-            <span className="text-sm font-medium">{calories}</span>
-          </div>
-          
-          <div className="flex flex-col">
-            <div className="flex items-center text-muted-foreground mb-1">
-              <Activity className="w-3.5 h-3.5 mr-1.5" />
-              <span className="text-xs">Exercises</span>
-            </div>
-            <span className="text-sm font-medium">{exercises}</span>
-          </div>
-        </div>
-        
-        <div className="flex justify-end">
-          <button 
-            className="flex items-center text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
-            onClick={handleButtonClick}
-          >
-            <span>{completed ? "View Details" : "Start Workout"}</span>
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
-        </div>
-      </div>
-
-      {onEdit && (
+        )}
+      </CardContent>
+      
+      <CardFooter className="p-3 pt-0 flex justify-between">
         <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => onEdit({ id, title, type, duration, calories, exercises, date, completed, notes })}
+          variant="outline"
+          size="sm"
+          className={`${
+            completed 
+              ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
+              : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400'
+          }`}
+          onClick={handleCompleteToggle}
         >
-          <Edit className="h-4 w-4" />
+          <CheckCircleIcon className="h-4 w-4 mr-2" />
+          {completed ? 'Completed' : 'Mark Complete'}
         </Button>
-      )}
-      {onDelete && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Trash2 className="h-4 w-4 text-red-500" />
+        
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => onEdit(workout)}
+            >
+              <EditIcon className="h-4 w-4" />
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Workout?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete "{title}". This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
-                className="bg-red-600 hover:bg-red-700"
-                onClick={() => onDelete(id)}
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-    </div>
+          )}
+          
+          {onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Trash2Icon className="h-4 w-4 text-red-500" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Workout</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this workout? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    className="bg-red-600 text-white hover:bg-red-700"
+                    onClick={() => onDelete(id)}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 
