@@ -6,6 +6,8 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import WorkoutCard from '@/components/WorkoutCard';
 import { Workout } from '@/types';
+import { motion } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface RecentWorkoutsProps {
   workouts: Workout[];
@@ -21,6 +23,22 @@ const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({
   onAddWorkout 
 }) => {
   const navigate = useNavigate();
+  
+  // Animation variants for staggered animation
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
   
   return (
     <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
@@ -41,21 +59,27 @@ const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({
       </CardHeader>
       <CardContent className="p-4">
         {isLoading ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading workouts...</p>
-          </div>
-        ) : workouts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {workouts.slice(0, 4).map((workout, index) => (
-              <WorkoutCard
-                key={workout.id}
-                {...workout}
-                className="animate-scale-in hover:shadow-md transition-all"
-                style={{ animationDelay: `${index * 50}ms` }}
-                onUpdate={onUpdate}
-              />
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-lg" />
             ))}
           </div>
+        ) : workouts.length > 0 ? (
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            variants={container}
+            initial="hidden"
+            animate="show"
+          >
+            {workouts.slice(0, 4).map((workout) => (
+              <motion.div key={workout.id} variants={item}>
+                <WorkoutCard
+                  {...workout}
+                  onUpdate={onUpdate}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         ) : (
           <div className="text-center py-8">
             <p className="text-muted-foreground">No recent workouts found.</p>
