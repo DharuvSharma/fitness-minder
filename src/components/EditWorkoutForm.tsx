@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Workout } from '@/types';
+import { Workout, WorkoutType } from '@/types';
 
 interface EditWorkoutFormProps {
   workout: Workout;
@@ -37,11 +37,13 @@ const workoutTypes = [
   { value: 'hiit', label: 'HIIT' },
   { value: 'flexibility', label: 'Flexibility' },
   { value: 'balance', label: 'Balance' },
+  { value: 'sport', label: 'Sport' },
+  { value: 'other', label: 'Other' },
 ];
 
 const EditWorkoutSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  type: z.enum(['strength', 'cardio', 'hiit', 'flexibility', 'balance']),
+  type: z.enum(['strength', 'cardio', 'hiit', 'flexibility', 'balance', 'sport', 'other']),
   duration: z.coerce.number().min(1, 'Duration must be at least 1 minute'),
   calories: z.coerce.number().min(0, 'Calories must be a positive number'),
   date: z.date(),

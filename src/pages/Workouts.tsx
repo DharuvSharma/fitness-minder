@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
 import WorkoutCard from '@/components/WorkoutCard';
@@ -246,7 +247,7 @@ const Workouts: React.FC = () => {
       <AddWorkoutForm 
         open={isAddWorkoutOpen} 
         onOpenChange={setIsAddWorkoutOpen}
-        onSave={(data: WorkoutFormData) => handleAddWorkout(data)}
+        onSave={handleAddWorkout}
       />
     </div>
   );

@@ -29,6 +29,7 @@ interface WorkoutCardProps {
   onEdit?: (workout: Workout) => void;
   onDelete?: (id: string) => void;
   onComplete?: (id: string, completed: boolean) => void;
+  onUpdate?: () => Promise<void>;
   className?: string;
   style?: React.CSSProperties;
 }
