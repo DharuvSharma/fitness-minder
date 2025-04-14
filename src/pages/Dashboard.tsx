@@ -35,6 +35,7 @@ import { useWorkouts } from '@/hooks/useWorkouts';
 import { useGoals } from '@/hooks/useGoals';
 import DashboardStats from '@/features/Dashboard/DashboardStats';
 import RecentWorkouts from '@/features/Dashboard/RecentWorkouts';
+import { Workout } from '@/types';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -88,9 +89,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0 md:pt-20">
-      <Navbar>
-        <ThemeToggle />
-      </Navbar>
+      <Navbar />
       
       <motion.div 
         className="container mx-auto px-4 pt-6"
@@ -214,8 +213,7 @@ const Dashboard = () => {
                               <TooltipContent>
                                 <p>This chart shows your workout intensity over time</p>
                               </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                            </TooltipProvider>
                         </div>
                         <CardDescription>Your progress over time</CardDescription>
                       </CardHeader>
@@ -259,7 +257,7 @@ const Dashboard = () => {
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
                   <RecentWorkouts 
-                    workouts={workouts as any} 
+                    workouts={workouts} 
                     isLoading={workoutsLoading} 
                     onUpdate={fetchWorkouts} 
                     onAddWorkout={() => setIsAddWorkoutOpen(true)} 

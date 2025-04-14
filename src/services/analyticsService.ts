@@ -1,5 +1,5 @@
 
-import { Workout } from '@/services/workoutService';
+import { Workout } from '@/types';
 import { subDays, parseISO, isAfter } from 'date-fns';
 
 export interface WorkoutAnalytics {

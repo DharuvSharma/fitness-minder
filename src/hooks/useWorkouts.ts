@@ -13,7 +13,7 @@ export const useWorkouts = (days = 30) => {
     try {
       setIsLoading(true);
       const data = await workoutService.getWorkoutsByDateRange(days);
-      setWorkouts(data as unknown as Workout[]);
+      setWorkouts(data);
       return data;
     } catch (error) {
       console.error('Error fetching workouts:', error);
@@ -29,7 +29,7 @@ export const useWorkouts = (days = 30) => {
       const newWorkout = await workoutService.addWorkout({
         ...workoutData,
         completed: false,
-      } as any);
+      });
       
       // Refresh workouts after adding
       await fetchWorkouts();

@@ -11,7 +11,7 @@ import {
   Target
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Workout } from '@/services/workoutService';
+import { Workout } from '@/types';
 import { analyticsService } from '@/services/analyticsService';
 
 interface AnalyticCardProps {

@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
-import WorkoutCard, { WorkoutType } from '@/components/WorkoutCard';
+import WorkoutCard from '@/components/WorkoutCard';
 import AddWorkoutForm from '@/components/AddWorkoutForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/Navbar';
-import { workoutService, Workout } from '@/services/workoutService';
+import { workoutService } from '@/services/workoutService';
+import { Workout, WorkoutFormData } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 
@@ -54,7 +55,7 @@ const Workouts: React.FC = () => {
     : [];
 
   // Handler for adding a new workout
-  const handleAddWorkout = async (workoutData: Omit<Workout, 'id' | 'completed'>) => {
+  const handleAddWorkout = async (workoutData: WorkoutFormData) => {
     try {
       const newWorkout = await workoutService.addWorkout({
         ...workoutData,

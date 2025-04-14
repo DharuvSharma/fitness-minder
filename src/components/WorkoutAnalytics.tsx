@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   BarChart, 
@@ -11,7 +10,7 @@ import {
   Legend
 } from 'recharts';
 import { cn } from '@/lib/utils';
-import { Workout } from '@/services/workoutService';
+import { Workout } from '@/types';
 
 interface WorkoutAnalyticsProps {
   workouts: Workout[];
