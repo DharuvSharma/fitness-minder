@@ -2,41 +2,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  CalendarDays, 
   TrendingUp, 
-  Trophy, 
-  BarChart,
+  Trophy,
   Activity,
   Plus,
-  User,
-  Dumbbell,
-  Target,
-  Bell,
-  CheckCircle
+  User
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import WorkoutCard from '@/components/WorkoutCard';
 import ProgressChart from '@/components/ProgressChart';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import AchievementTracker from '@/components/AchievementTracker';
 import WorkoutAnalytics from '@/components/WorkoutAnalytics';
 import UserProfile from '@/components/UserProfile';
 import AddWorkoutForm from '@/components/AddWorkoutForm';
+import AddGoalDialog from '@/components/AddGoalDialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { workoutService, Workout } from '@/services/workoutService';
-import { goalService, Goal } from '@/services/goalService';
 import { notificationService } from '@/services/notificationService';
-import AddGoalDialog from '@/components/AddGoalDialog';
+import { useWorkouts } from '@/hooks/useWorkouts';
+import { useGoals } from '@/hooks/useGoals';
+import DashboardStats from '@/features/Dashboard/DashboardStats';
+import RecentWorkouts from '@/features/Dashboard/RecentWorkouts';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [recentWorkouts, setRecentWorkouts] = useState<Workout[]>([]);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const { workouts, isLoading, fetchWorkouts, addWorkout } = useWorkouts(30);
+  const { goals, fetchGoals, addGoal } = useGoals();
   const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [progressData, setProgressData] = useState([
@@ -50,98 +44,25 @@ const Dashboard = () => {
   ]);
   
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch workouts for the last 30 days
-        const workouts = await workoutService.getWorkoutsByDateRange(30);
-        setRecentWorkouts(workouts);
-        
-        // Fetch user goals
-        const userGoals = await goalService.getGoals();
-        setGoals(userGoals);
-        
-        // Show welcome notification
-        setTimeout(() => {
-          notificationService.showLocalNotification(
-            'Welcome to FitnessMinder', 
-            'Track your workouts, set goals, and monitor your progress!',
-            'system'
-          );
-        }, 2000);
-        
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        toast.error('Failed to load dashboard data. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchData();
+    // Show welcome notification
+    setTimeout(() => {
+      notificationService.showLocalNotification(
+        'Welcome to FitnessMinder', 
+        'Track your workouts, set goals, and monitor your progress!',
+        'system'
+      );
+    }, 2000);
   }, []);
   
-  const handleWorkoutUpdate = async () => {
-    try {
-      const workouts = await workoutService.getWorkoutsByDateRange(30);
-      setRecentWorkouts(workouts);
-    } catch (error) {
-      console.error('Error updating workouts:', error);
-    }
+  const handleWorkoutSubmit = async (workoutData) => {
+    await addWorkout(workoutData);
+    setIsAddWorkoutOpen(false);
   };
   
-  const handleAddWorkout = async (workoutData: Omit<Workout, 'id' | 'completed'>) => {
-    try {
-      await workoutService.addWorkout({
-        ...workoutData,
-        completed: false,
-      });
-      
-      // Refresh workouts after adding
-      handleWorkoutUpdate();
-      toast.success('Workout added successfully!');
-      
-      // Show notification
-      notificationService.showLocalNotification(
-        'New Workout Added', 
-        `You've added a new ${workoutData.type} workout to your schedule.`,
-        'workout'
-      );
-    } catch (error) {
-      console.error('Failed to add workout:', error);
-      toast.error('Could not add workout. Please try again.');
-    }
+  const handleGoalSubmit = async (goalData) => {
+    await addGoal(goalData);
+    setIsAddGoalOpen(false);
   };
-  
-  const handleAddGoal = async (goalData: any) => {
-    try {
-      await goalService.addGoal(goalData);
-      
-      // Refresh goals after adding
-      const updatedGoals = await goalService.getGoals();
-      setGoals(updatedGoals);
-      
-      toast.success('Goal added successfully!');
-      
-      // Show notification
-      notificationService.showLocalNotification(
-        'New Goal Created', 
-        `Keep up the good work! Your new fitness goal has been set.`,
-        'goal'
-      );
-    } catch (error) {
-      console.error('Failed to add goal:', error);
-      toast.error('Could not add goal. Please try again.');
-    }
-  };
-
-  // Calculate stats for summary
-  const totalWorkouts = recentWorkouts.length;
-  const completedWorkouts = recentWorkouts.filter(w => w.completed).length;
-  const totalDuration = recentWorkouts.reduce((sum, w) => sum + w.duration, 0);
-  const totalGoals = goals.length;
-  const completedGoals = goals.filter(g => g.current >= g.target).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0 md:pt-20">
@@ -179,75 +100,7 @@ const Dashboard = () => {
         </header>
         
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Workouts</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold">{totalWorkouts}</p>
-                  <p className="text-xs text-muted-foreground">{completedWorkouts} completed</p>
-                </div>
-                <div className="p-2 bg-indigo-100 rounded-full dark:bg-indigo-900/50">
-                  <Dumbbell className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Duration</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold">{totalDuration} min</p>
-                  <p className="text-xs text-muted-foreground">This month</p>
-                </div>
-                <div className="p-2 bg-blue-100 rounded-full dark:bg-blue-900/50">
-                  <CalendarDays className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Goals</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold">{totalGoals}</p>
-                  <p className="text-xs text-muted-foreground">{completedGoals} achieved</p>
-                </div>
-                <div className="p-2 bg-amber-100 rounded-full dark:bg-amber-900/50">
-                  <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50 hover:shadow-lg transition-shadow">
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">Streak</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold">7 days</p>
-                  <p className="text-xs text-muted-foreground">Current streak</p>
-                </div>
-                <div className="p-2 bg-green-100 rounded-full dark:bg-green-900/50">
-                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <DashboardStats workouts={workouts} goals={goals} />
         
         <Tabs defaultValue="overview" className="mb-6">
           <TabsList className="mb-6 p-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -276,7 +129,7 @@ const Dashboard = () => {
             <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
               <CardContent className="p-4">
                 <AdvancedAnalytics 
-                  workouts={recentWorkouts} 
+                  workouts={workouts} 
                   dateRange="the last 30 days" 
                 />
               </CardContent>
@@ -316,53 +169,12 @@ const Dashboard = () => {
             </div>
             
             {/* Third Row - Recent Workouts */}
-            <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
-              <CardHeader className="p-4 pb-0">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl font-semibold flex items-center">
-                    <Activity className="w-5 h-5 mr-2 text-indigo-500" />
-                    Recent Workouts
-                  </CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => navigate('/workouts')}
-                    className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-                  >
-                    View All
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                {isLoading ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Loading workouts...</p>
-                  </div>
-                ) : recentWorkouts.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {recentWorkouts.slice(0, 4).map((workout, index) => (
-                      <WorkoutCard
-                        key={workout.id}
-                        {...workout}
-                        className="animate-scale-in hover:shadow-md transition-all"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                        onUpdate={handleWorkoutUpdate}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No recent workouts found.</p>
-                    <Button 
-                      variant="link" 
-                      onClick={() => setIsAddWorkoutOpen(true)}
-                      className="mt-2 text-indigo-600 dark:text-indigo-400"
-                    >
-                      Add your first workout
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <RecentWorkouts 
+              workouts={workouts} 
+              isLoading={isLoading} 
+              onUpdate={fetchWorkouts} 
+              onAddWorkout={() => setIsAddWorkoutOpen(true)} 
+            />
           </TabsContent>
           
           <TabsContent value="analytics" className="animate-fade-in space-y-6">
@@ -373,7 +185,7 @@ const Dashboard = () => {
                 <CardDescription>Breakdown by workout type</CardDescription>
               </CardHeader>
               <CardContent className="p-4">
-                <WorkoutAnalytics workouts={recentWorkouts} period="week" />
+                <WorkoutAnalytics workouts={workouts} period="week" />
               </CardContent>
             </Card>
             
@@ -434,7 +246,7 @@ const Dashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {recentWorkouts.slice(0, 7).map((workout) => (
+                    {workouts.slice(0, 7).map((workout) => (
                       <TableRow key={workout.id}>
                         <TableCell>{new Date(workout.date).toLocaleDateString()}</TableCell>
                         <TableCell className="capitalize">{workout.type}</TableCell>
@@ -501,14 +313,14 @@ const Dashboard = () => {
       <AddWorkoutForm
         open={isAddWorkoutOpen}
         onOpenChange={setIsAddWorkoutOpen}
-        onSave={handleAddWorkout}
+        onSave={handleWorkoutSubmit}
       />
       
       {/* Add Goal Dialog */}
       <AddGoalDialog
         open={isAddGoalOpen}
         onOpenChange={setIsAddGoalOpen}
-        onSave={handleAddGoal}
+        onSave={handleGoalSubmit}
       />
     </div>
   );
