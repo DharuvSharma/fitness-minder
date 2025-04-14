@@ -19,13 +19,17 @@ interface RecentWorkoutsProps {
   isLoading: boolean;
   onUpdate: () => Promise<Workout[]>;
   onAddWorkout: () => void;
+  onViewHistory?: () => void;
+  onViewCalendar?: () => void;
 }
 
 const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({ 
   workouts, 
   isLoading, 
   onUpdate, 
-  onAddWorkout 
+  onAddWorkout,
+  onViewHistory,
+  onViewCalendar
 }) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | 'completed' | 'planned'>('all');
@@ -36,6 +40,22 @@ const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({
     if (filter === 'planned') return !workout.completed;
     return true;
   }).slice(0, 5); // Show only the 5 most recent workouts
+  
+  const handleViewHistory = () => {
+    if (onViewHistory) {
+      onViewHistory();
+    } else {
+      navigate('/workout-history');
+    }
+  };
+  
+  const handleViewCalendar = () => {
+    if (onViewCalendar) {
+      onViewCalendar();
+    } else {
+      navigate('/workout-calendar');
+    }
+  };
   
   return (
     <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm dark:bg-gray-800/50">
@@ -61,7 +81,7 @@ const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({
               <RefreshCcw className="h-3.5 w-3.5 mr-1" />
               Refresh
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate('/workout-calendar')}>
+            <Button variant="outline" size="sm" onClick={handleViewCalendar}>
               <Calendar className="h-3.5 w-3.5 mr-1" />
               Calendar
             </Button>
@@ -96,7 +116,7 @@ const RecentWorkouts: React.FC<RecentWorkoutsProps> = ({
         <Button 
           variant="link" 
           className="px-0 text-indigo-600" 
-          onClick={() => navigate('/workout-history')}
+          onClick={handleViewHistory}
         >
           View All Workouts
           <ArrowRight className="ml-2 h-4 w-4" />

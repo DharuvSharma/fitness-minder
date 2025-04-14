@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
 import WorkoutCard from '@/components/WorkoutCard';
@@ -83,6 +82,33 @@ const Workouts: React.FC = () => {
     }
   };
 
+  const handleEditWorkout = (workout: Workout) => {
+    // Implementation for editing workout
+    console.log('Edit workout:', workout);
+  };
+
+  const handleDeleteWorkout = async (id: string) => {
+    try {
+      await workoutService.deleteWorkout(id);
+      await handleWorkoutUpdate();
+      toast.success('Workout deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete workout:', error);
+      toast.error('Failed to delete workout');
+    }
+  };
+
+  const handleToggleComplete = async (id: string, completed: boolean) => {
+    try {
+      await workoutService.updateWorkout(id, { completed });
+      await handleWorkoutUpdate();
+      toast.success(`Workout marked as ${completed ? 'completed' : 'incomplete'}`);
+    } catch (error) {
+      console.error('Failed to update workout completion status:', error);
+      toast.error('Failed to update workout status');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0 md:pt-20">
       <Navbar />
@@ -150,10 +176,12 @@ const Workouts: React.FC = () => {
                 filteredWorkouts.map((workout, index) => (
                   <WorkoutCard 
                     key={workout.id} 
-                    {...workout} 
-                    className="animate-scale-in" 
+                    workout={workout} 
+                    className="animate-scale-in"
                     style={{ animationDelay: `${index * 50}ms` }}
-                    onUpdate={handleWorkoutUpdate}
+                    onEdit={(workout) => handleEditWorkout(workout)}
+                    onDelete={(id) => handleDeleteWorkout(id)}
+                    onComplete={(id, completed) => handleToggleComplete(id, completed)}
                   />
                 ))
               ) : (
@@ -174,7 +202,7 @@ const Workouts: React.FC = () => {
                 upcomingWorkouts.map((workout, index) => (
                   <WorkoutCard 
                     key={workout.id} 
-                    {...workout} 
+                    workout={workout} 
                     className="animate-scale-in" 
                     style={{ animationDelay: `${index * 50}ms` }}
                     onUpdate={handleWorkoutUpdate}
@@ -198,7 +226,7 @@ const Workouts: React.FC = () => {
                 completedWorkouts.map((workout, index) => (
                   <WorkoutCard 
                     key={workout.id} 
-                    {...workout} 
+                    workout={workout} 
                     className="animate-scale-in" 
                     style={{ animationDelay: `${index * 50}ms` }}
                     onUpdate={handleWorkoutUpdate}
@@ -218,7 +246,7 @@ const Workouts: React.FC = () => {
       <AddWorkoutForm 
         open={isAddWorkoutOpen} 
         onOpenChange={setIsAddWorkoutOpen}
-        onSave={handleAddWorkout}
+        onSave={(data: WorkoutFormData) => handleAddWorkout(data)}
       />
     </div>
   );

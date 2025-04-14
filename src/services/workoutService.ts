@@ -1,4 +1,5 @@
-import { Workout, WorkoutType } from '@/types';
+
+import { Workout, WorkoutType, WorkoutFormData } from '@/types';
 import api from './apiService';
 import { subDays, parseISO, isAfter } from 'date-fns';
 
@@ -10,9 +11,9 @@ const initialWorkouts: Workout[] = [
     type: 'strength',
     duration: 45,
     calories: 320,
-    exercises: 8,
     date: '2023-06-10',
     completed: true,
+    exercises: "8",
   },
   {
     id: '2',
@@ -20,9 +21,9 @@ const initialWorkouts: Workout[] = [
     type: 'cardio',
     duration: 28,
     calories: 250,
-    exercises: 1,
     date: '2023-06-08',
     completed: true,
+    exercises: "1",
   },
   {
     id: '3',
@@ -30,9 +31,9 @@ const initialWorkouts: Workout[] = [
     type: 'hiit',
     duration: 30,
     calories: 400,
-    exercises: 6,
     date: '2023-06-12',
     completed: false,
+    exercises: "6",
   },
   {
     id: '4',
@@ -40,9 +41,9 @@ const initialWorkouts: Workout[] = [
     type: 'strength',
     duration: 50,
     calories: 380,
-    exercises: 7,
     date: '2023-06-05',
     completed: true,
+    exercises: "7",
   },
   {
     id: '5',
@@ -50,9 +51,9 @@ const initialWorkouts: Workout[] = [
     type: 'flexibility',
     duration: 35,
     calories: 150,
-    exercises: 12,
     date: '2023-06-07',
     completed: true,
+    exercises: "12",
   },
   {
     id: '6',
@@ -60,9 +61,9 @@ const initialWorkouts: Workout[] = [
     type: 'cardio',
     duration: 60,
     calories: 450,
-    exercises: 1,
     date: '2023-06-04',
     completed: true,
+    exercises: "1",
   },
   {
     id: '7',
@@ -70,9 +71,9 @@ const initialWorkouts: Workout[] = [
     type: 'strength',
     duration: 55,
     calories: 420,
-    exercises: 10,
     date: '2023-06-01',
     completed: true,
+    exercises: "10",
   },
   {
     id: '8',
@@ -80,9 +81,9 @@ const initialWorkouts: Workout[] = [
     type: 'hiit',
     duration: 25,
     calories: 320,
-    exercises: 4,
     date: '2023-06-14',
     completed: false,
+    exercises: "4",
   },
 ];
 

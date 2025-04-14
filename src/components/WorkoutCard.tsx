@@ -29,13 +29,17 @@ interface WorkoutCardProps {
   onEdit?: (workout: Workout) => void;
   onDelete?: (id: string) => void;
   onComplete?: (id: string, completed: boolean) => void;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 const WorkoutCard: React.FC<WorkoutCardProps> = ({ 
   workout, 
   onEdit, 
   onDelete,
-  onComplete 
+  onComplete,
+  className = '',
+  style
 }) => {
   const { id, title, type, duration, calories, date, completed, notes } = workout;
   
@@ -64,9 +68,12 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   };
 
   return (
-    <Card className={`border-l-4 transition-all ${
-      completed ? 'border-l-green-500' : 'border-l-amber-500'
-    } hover:shadow-md`}>
+    <Card 
+      className={`border-l-4 transition-all ${
+        completed ? 'border-l-green-500' : 'border-l-amber-500'
+      } hover:shadow-md ${className}`}
+      style={style}
+    >
       <CardHeader className="p-4 pb-0">
         <div className="flex justify-between items-start">
           <div>

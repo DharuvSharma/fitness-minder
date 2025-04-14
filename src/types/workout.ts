@@ -1,5 +1,5 @@
 
-export type WorkoutType = 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'balance';
+export type WorkoutType = 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'balance' | 'sport' | 'other';
 
 export interface Workout {
   id: string;
