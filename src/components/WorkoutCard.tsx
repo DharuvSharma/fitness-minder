@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Clock, Flame, Activity, ChevronRight, Check } from 'lucide-react';
 import { format } from 'date-fns';
-
-export type WorkoutType = 'strength' | 'cardio' | 'flexibility' | 'hiit';
+import { WorkoutType } from '@/types';
 
 export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
@@ -23,6 +21,9 @@ const typeConfig: Record<WorkoutType, { color: string, label: string }> = {
   cardio: { color: 'bg-red-50 text-red-600', label: 'Cardio' },
   flexibility: { color: 'bg-purple-50 text-purple-600', label: 'Flexibility' },
   hiit: { color: 'bg-orange-50 text-orange-600', label: 'HIIT' },
+  balance: { color: 'bg-emerald-50 text-emerald-600', label: 'Balance' },
+  sport: { color: 'bg-amber-50 text-amber-600', label: 'Sport' },
+  other: { color: 'bg-gray-50 text-gray-600', label: 'Other' }
 };
 
 const WorkoutCard: React.FC<WorkoutCardProps> = ({

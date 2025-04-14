@@ -1,18 +1,6 @@
-import { WorkoutType } from '@/components/WorkoutCard';
+import { Workout, WorkoutType } from '@/types';
 import api from './apiService';
 import { subDays, parseISO, isAfter } from 'date-fns';
-
-export interface Workout {
-  id: string;
-  title: string;
-  type: WorkoutType;
-  duration: number;
-  calories: number;
-  exercises: number;
-  date: string;
-  completed: boolean;
-  notes?: string;
-}
 
 // Mock data for initial workouts (used only when API fails or for development)
 const initialWorkouts: Workout[] = [

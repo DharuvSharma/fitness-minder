@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { WorkoutType } from './WorkoutCard';
+import { WorkoutType } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -38,7 +37,7 @@ const workoutFormSchema = z.object({
   title: z.string().min(3, {
     message: "Workout title must be at least 3 characters.",
   }),
-  type: z.enum(['strength', 'cardio', 'flexibility', 'hiit'] as const),
+  type: z.enum(['strength', 'cardio', 'flexibility', 'hiit', 'balance', 'sport', 'other'] as const),
   duration: z.coerce.number().min(1, {
     message: "Duration must be at least 1 minute.",
   }),
@@ -139,6 +138,9 @@ const AddWorkoutForm: React.FC<AddWorkoutFormProps> = ({
                         <SelectItem value="cardio">Cardio</SelectItem>
                         <SelectItem value="hiit">HIIT</SelectItem>
                         <SelectItem value="flexibility">Flexibility</SelectItem>
+                        <SelectItem value="balance">Balance</SelectItem>
+                        <SelectItem value="sport">Sport</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
