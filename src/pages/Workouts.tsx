@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
 import WorkoutCard from '@/components/WorkoutCard';
 import AddWorkoutForm from '@/components/AddWorkoutForm';
@@ -11,12 +11,22 @@ import { workoutService } from '@/services/workoutService';
 import { Workout, WorkoutFormData } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
+import DailyQuote from '@/components/DailyQuote';
+import WorkoutTimer from '@/components/WorkoutTimer';
+import WorkoutReminder from '@/components/WorkoutReminder';
+
+// Lazy load the EditWorkoutForm component
+const EditWorkoutForm = lazy(() => import('@/components/EditWorkoutForm'));
 
 const Workouts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
+  const [isEditWorkoutOpen, setIsEditWorkoutOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [showTimer, setShowTimer] = useState(false);
+  const [showReminders, setShowReminders] = useState(false);
   const { toast: uiToast } = useToast();
 
   // Load workouts on component mount
@@ -84,8 +94,22 @@ const Workouts: React.FC = () => {
   };
 
   const handleEditWorkout = (workout: Workout) => {
-    // Implementation for editing workout
-    console.log('Edit workout:', workout);
+    setSelectedWorkout(workout);
+    setIsEditWorkoutOpen(true);
+  };
+
+  const handleSaveEdit = async (updatedWorkout: Partial<Workout>) => {
+    if (!selectedWorkout) return;
+    
+    try {
+      await workoutService.updateWorkout(selectedWorkout.id, updatedWorkout);
+      await handleWorkoutUpdate();
+      setIsEditWorkoutOpen(false);
+      toast.success('Workout updated successfully');
+    } catch (error) {
+      console.error('Failed to update workout:', error);
+      toast.error('Failed to update workout');
+    }
   };
 
   const handleDeleteWorkout = async (id: string) => {
@@ -110,6 +134,11 @@ const Workouts: React.FC = () => {
     }
   };
 
+  const handleStartWorkout = (workout: Workout) => {
+    setSelectedWorkout(workout);
+    setShowTimer(true);
+  };
+
   return (
     <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0 md:pt-20">
       <Navbar />
@@ -132,8 +161,33 @@ const Workouts: React.FC = () => {
           </Button>
         </header>
         
+        {/* Daily Quote */}
+        <DailyQuote className="mb-6" />
+        
+        {/* Timer if active */}
+        {showTimer && selectedWorkout && (
+          <div className="mb-6">
+            <WorkoutTimer 
+              initialTime={selectedWorkout.duration * 60} 
+              workoutName={selectedWorkout.title} 
+              onComplete={() => {
+                setShowTimer(false);
+                handleToggleComplete(selectedWorkout.id, true);
+              }} 
+            />
+            <div className="text-center mt-2">
+              <button 
+                onClick={() => setShowTimer(false)} 
+                className="text-sm text-muted-foreground underline"
+              >
+                Hide Timer
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Search and filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
@@ -156,8 +210,24 @@ const Workouts: React.FC = () => {
               <span>Date</span>
               <ChevronDown className="h-4 w-4" />
             </Button>
+            
+            <Button 
+              variant={showReminders ? "default" : "outline"}
+              className="flex items-center gap-2"
+              onClick={() => setShowReminders(!showReminders)}
+            >
+              <BellRing className="h-4 w-4" />
+              <span>Reminders</span>
+            </Button>
           </div>
         </div>
+        
+        {/* Reminders Panel */}
+        {showReminders && (
+          <div className="mb-6 animate-fade-in">
+            <WorkoutReminder />
+          </div>
+        )}
         
         {/* Tabs for workout status */}
         <Tabs defaultValue="all" className="mb-6">
@@ -180,9 +250,20 @@ const Workouts: React.FC = () => {
                     workout={workout} 
                     className="animate-scale-in"
                     style={{ animationDelay: `${index * 50}ms` }}
-                    onEdit={(workout) => handleEditWorkout(workout)}
-                    onDelete={(id) => handleDeleteWorkout(id)}
-                    onComplete={(id, completed) => handleToggleComplete(id, completed)}
+                    onEdit={handleEditWorkout}
+                    onDelete={handleDeleteWorkout}
+                    onComplete={handleToggleComplete}
+                    startButton={!workout.completed && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                        onClick={() => handleStartWorkout(workout)}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Start
+                      </Button>
+                    )}
                   />
                 ))
               ) : (
@@ -207,6 +288,20 @@ const Workouts: React.FC = () => {
                     className="animate-scale-in" 
                     style={{ animationDelay: `${index * 50}ms` }}
                     onUpdate={handleWorkoutUpdate}
+                    onEdit={handleEditWorkout}
+                    onDelete={handleDeleteWorkout}
+                    onComplete={handleToggleComplete}
+                    startButton={
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                        onClick={() => handleStartWorkout(workout)}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Start
+                      </Button>
+                    }
                   />
                 ))
               ) : (
@@ -231,6 +326,9 @@ const Workouts: React.FC = () => {
                     className="animate-scale-in" 
                     style={{ animationDelay: `${index * 50}ms` }}
                     onUpdate={handleWorkoutUpdate}
+                    onEdit={handleEditWorkout}
+                    onDelete={handleDeleteWorkout}
+                    onComplete={handleToggleComplete}
                   />
                 ))
               ) : (
@@ -249,6 +347,18 @@ const Workouts: React.FC = () => {
         onOpenChange={setIsAddWorkoutOpen}
         onSave={handleAddWorkout}
       />
+      
+      {/* Edit Workout Form Dialog - Lazy loaded */}
+      {isEditWorkoutOpen && selectedWorkout && (
+        <Suspense fallback={<div>Loading...</div>}>
+          <EditWorkoutForm 
+            workout={selectedWorkout}
+            open={isEditWorkoutOpen}
+            onOpenChange={setIsEditWorkoutOpen}
+            onSave={handleSaveEdit}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

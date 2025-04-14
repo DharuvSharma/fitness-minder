@@ -30,6 +30,7 @@ interface WorkoutCardProps {
   onDelete?: (id: string) => void;
   onComplete?: (id: string, completed: boolean) => void;
   onUpdate?: () => Promise<void>;
+  startButton?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -39,6 +40,8 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   onEdit, 
   onDelete,
   onComplete,
+  onUpdate,
+  startButton,
   className = '',
   style
 }) => {
@@ -113,19 +116,25 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
       </CardContent>
       
       <CardFooter className="p-3 pt-0 flex justify-between">
-        <Button
-          variant="outline"
-          size="sm"
-          className={`${
-            completed 
-              ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
-              : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400'
-          }`}
-          onClick={handleCompleteToggle}
-        >
-          <CheckCircleIcon className="h-4 w-4 mr-2" />
-          {completed ? 'Completed' : 'Mark Complete'}
-        </Button>
+        <div className="flex gap-2">
+          {startButton}
+          
+          {!startButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              className={`${
+                completed 
+                  ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
+                  : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400'
+              }`}
+              onClick={handleCompleteToggle}
+            >
+              <CheckCircleIcon className="h-4 w-4 mr-2" />
+              {completed ? 'Completed' : 'Mark Complete'}
+            </Button>
+          )}
+        </div>
         
         <div className="flex gap-2">
           {onEdit && (

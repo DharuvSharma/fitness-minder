@@ -121,6 +121,27 @@ export const notificationService = {
           description: message
         });
     }
+    
+    // If browser notifications are supported and permission granted, show a browser notification
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, { 
+          body: message,
+          icon: '/favicon.ico'
+        });
+      } catch (error) {
+        console.error('Error showing browser notification:', error);
+      }
+    }
+  },
+  
+  // Schedule a notification for a future time
+  scheduleNotification: (title: string, message: string, delayMinutes: number, type: NotificationType = 'system') => {
+    setTimeout(() => {
+      notificationService.showLocalNotification(title, message, type);
+    }, delayMinutes * 60 * 1000);
+    
+    return true;
   }
 };
 
@@ -130,6 +151,7 @@ export const registerForPushNotifications = async (): Promise<boolean> => {
     // Check if the browser supports notifications
     if (!('Notification' in window)) {
       console.log('This browser does not support notifications');
+      toast.error('Your browser does not support notifications');
       return false;
     }
     
@@ -139,13 +161,16 @@ export const registerForPushNotifications = async (): Promise<boolean> => {
     if (permission === 'granted') {
       // Could integrate with a proper push notification service here
       console.log('Notification permission granted');
+      toast.success('Notification permission granted');
       return true;
     } else {
       console.log('Notification permission denied');
+      toast.error('Please enable notifications in your browser settings to receive workout reminders');
       return false;
     }
   } catch (error) {
     console.error('Error registering for push notifications:', error);
+    toast.error('Failed to set up notifications');
     return false;
   }
 };
