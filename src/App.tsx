@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Workouts from './pages/Workouts';
@@ -10,7 +10,7 @@ import WorkoutCalendarView from './pages/WorkoutCalendarView';
 import Progress from './pages/Progress';
 import Goals from './pages/Goals';
 import { Toaster } from '@/components/ui/sonner';
-import BottomNavbar from '@/components/BottomNavbar';
+import Navigation from '@/components/Navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 function App() {
@@ -34,7 +34,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="fitness-theme">
       <Router>
-        <div className="relative min-h-screen bg-background text-foreground pb-16 md:pb-0">
+        <div className="relative min-h-screen bg-background text-foreground pb-16 md:pb-0 md:pt-16">
           <div className="fixed top-4 right-4 z-50">
             <ThemeToggle />
           </div>
@@ -79,7 +79,7 @@ function App() {
             } />
           </Routes>
           
-          <BottomNavbar />
+          <Navigation />
         </div>
       </Router>
       <Toaster />
