@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import WorkoutHistory from './pages/WorkoutHistory';
 import WorkoutCalendarView from './pages/WorkoutCalendarView';
 import Progress from './pages/Progress';
+import Goals from './pages/Goals';
 import { Toaster } from '@/components/ui/sonner';
 import BottomNavbar from '@/components/BottomNavbar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -73,7 +74,7 @@ function App() {
             } />
             <Route path="/goals" element={
               <PrivateRoute>
-                <div>Goals Page</div>
+                <Goals />
               </PrivateRoute>
             } />
           </Routes>
