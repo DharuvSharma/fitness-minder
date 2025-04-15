@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
@@ -21,22 +20,75 @@ const Progress: React.FC = () => {
   const [filteredWorkouts, setFilteredWorkouts] = useState<any[]>([]);
   const { toast } = useToast();
 
-  // Fetch workout data and goals
+  const handleCompleteGoal = async (id: string) => {
+    try {
+      await goalService.updateGoal(id, { status: 'completed', progress: 100 });
+      const fetchedGoals = await goalService.getGoals();
+      setGoals(fetchedGoals);
+      toast({
+        title: "Goal completed",
+        description: "You've successfully completed your goal!",
+      });
+    } catch (error) {
+      console.error('Failed to complete goal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update goal status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteGoal = async (id: string) => {
+    try {
+      await goalService.deleteGoal(id);
+      const fetchedGoals = await goalService.getGoals();
+      setGoals(fetchedGoals);
+      toast({
+        title: "Goal deleted",
+        description: "Goal has been removed successfully",
+      });
+    } catch (error) {
+      console.error('Failed to delete goal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete goal",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleProgressUpdate = async (id: string, value: number) => {
+    try {
+      await goalService.updateGoal(id, { current: value });
+      const fetchedGoals = await goalService.getGoals();
+      setGoals(fetchedGoals);
+      toast({
+        title: "Progress updated",
+        description: "Goal progress has been updated",
+      });
+    } catch (error) {
+      console.error('Failed to update goal progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update goal progress",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         
-        // Fetch workouts and goals concurrently
         const [workouts, fetchedGoals] = await Promise.all([
           workoutService.getWorkouts(),
           goalService.getGoals()
         ]);
         
-        // Filter to completed workouts only
         const completedWorkouts = workouts.filter(w => w.completed);
         
-        // Apply date filtering based on selected range
         const daysToFilter = dateRange === '7days' ? 7 : 30;
         const dateThreshold = subDays(new Date(), daysToFilter);
         
@@ -47,9 +99,8 @@ const Progress: React.FC = () => {
         
         setFilteredWorkouts(filteredWorkouts);
         
-        // Group workouts by date
         const workoutsByDate = filteredWorkouts.reduce((acc, workout) => {
-          const date = workout.date.substring(0, 10); // YYYY-MM-DD format
+          const date = workout.date.substring(0, 10);
           
           if (!acc[date]) {
             acc[date] = {
@@ -64,11 +115,9 @@ const Progress: React.FC = () => {
           return acc;
         }, {} as Record<string, { workouts: number, calories: number }>);
         
-        // Create chart data for selected range
         const workoutChartData: ProgressDataPoint[] = [];
         const calorieChartData: ProgressDataPoint[] = [];
         
-        // Generate date points based on selected range
         for (let i = daysToFilter; i >= 0; i--) {
           const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
           const formattedDate = format(subDays(new Date(), i), 'MMM dd');
@@ -100,9 +149,8 @@ const Progress: React.FC = () => {
     };
     
     fetchData();
-  }, [toast, dateRange]); // Added dateRange to the dependency array to trigger refetch when it changes
+  }, [toast, dateRange]);
 
-  // Handle refreshing goals after a goal is added
   const handleGoalAdded = async () => {
     try {
       const fetchedGoals = await goalService.getGoals();
@@ -210,6 +258,9 @@ const Progress: React.FC = () => {
                       status={goal.status}
                       progress={goal.progress}
                       deadline={goal.deadline}
+                      onComplete={() => handleCompleteGoal(goal.id)}
+                      onDelete={() => handleDeleteGoal(goal.id)}
+                      onProgressUpdate={(value) => handleProgressUpdate(goal.id, value)}
                     />
                   ))}
                 </div>
