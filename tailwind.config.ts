@@ -27,7 +27,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					light: 'hsl(var(--primary) / 0.8)',
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -75,6 +76,10 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontFamily: {
+				sans: ['Inter', 'system-ui', 'sans-serif'],
+				heading: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {
@@ -127,9 +132,6 @@ export default {
 				'slide-down': 'slide-down 0.5s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
 				'pulse-soft': 'pulse-soft 2s infinite ease-in-out'
-			},
-			fontFamily: {
-				sans: ['Inter var', 'Inter', 'sans-serif'],
 			},
 			backdropBlur: {
 				xs: '2px',

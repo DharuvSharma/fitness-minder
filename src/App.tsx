@@ -9,6 +9,8 @@ import WorkoutHistory from './pages/WorkoutHistory';
 import WorkoutCalendarView from './pages/WorkoutCalendarView';
 import Progress from './pages/Progress';
 import { Toaster } from '@/components/ui/sonner';
+import BottomNavbar from '@/components/BottomNavbar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 function App() {
   const [authState, setAuthState] = useState({
@@ -31,40 +33,53 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="fitness-theme">
       <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/profile" element={
-            <PrivateRoute>
-              <div>Profile Page</div>
-            </PrivateRoute>
-          } />
-          <Route path="/" element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          } />
-          <Route path="/workouts" element={
-            <PrivateRoute>
-              <Workouts />
-            </PrivateRoute>
-          } />
+        <div className="relative min-h-screen bg-background text-foreground pb-16 md:pb-0">
+          <div className="fixed top-4 right-4 z-50">
+            <ThemeToggle />
+          </div>
           
-          <Route path="/workout-history" element={
-            <PrivateRoute>
-              <WorkoutHistory />
-            </PrivateRoute>
-          } />
-          <Route path="/workout-calendar" element={
-            <PrivateRoute>
-              <WorkoutCalendarView />
-            </PrivateRoute>
-          } />
-          <Route path="/progress" element={
-            <PrivateRoute>
-              <Progress />
-            </PrivateRoute>
-          } />
-        </Routes>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={
+              <PrivateRoute>
+                <div>Profile Page</div>
+              </PrivateRoute>
+            } />
+            <Route path="/" element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/workouts" element={
+              <PrivateRoute>
+                <Workouts />
+              </PrivateRoute>
+            } />
+            
+            <Route path="/workout-history" element={
+              <PrivateRoute>
+                <WorkoutHistory />
+              </PrivateRoute>
+            } />
+            <Route path="/workout-calendar" element={
+              <PrivateRoute>
+                <WorkoutCalendarView />
+              </PrivateRoute>
+            } />
+            <Route path="/progress" element={
+              <PrivateRoute>
+                <Progress />
+              </PrivateRoute>
+            } />
+            <Route path="/goals" element={
+              <PrivateRoute>
+                <div>Goals Page</div>
+              </PrivateRoute>
+            } />
+          </Routes>
+          
+          <BottomNavbar />
+        </div>
       </Router>
       <Toaster />
     </ThemeProvider>
