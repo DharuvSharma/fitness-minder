@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Plus, Search, Filter, Calendar, ChevronDown } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, ChevronDown, BellRing, Play } from 'lucide-react';
 import WorkoutCard from '@/components/WorkoutCard';
 import AddWorkoutForm from '@/components/AddWorkoutForm';
 import { Button } from '@/components/ui/button';

@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
-import { notificationService } from '@/services/notificationService';
+import { notificationService, registerForPushNotifications } from '@/services/notificationService';
 
 interface WorkoutTimerProps {
   initialTime?: number; // in seconds
@@ -28,12 +27,10 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   const [progress, setProgress] = useState(100);
   const intervalRef = useRef<number | null>(null);
 
-  // Calculate progress percentage
   useEffect(() => {
     setProgress((timeRemaining / initialTime) * 100);
   }, [timeRemaining, initialTime]);
 
-  // Timer logic
   useEffect(() => {
     if (isActive) {
       intervalRef.current = window.setInterval(() => {
@@ -42,7 +39,6 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
             clearInterval(intervalRef.current!);
             setIsActive(false);
             
-            // Show notification when timer completes
             notificationService.showLocalNotification(
               'Workout Complete!', 
               `You've completed your ${workoutName} session.`,
