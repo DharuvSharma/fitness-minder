@@ -42,11 +42,11 @@ export const quoteService = {
       
       // Fallback to hardcoded quotes if API fails
       const fallbackQuotes = [
-        { id: '1', text: 'The body achieves what the mind believes.', author: 'Napoleon Hill' },
-        { id: '2', text: 'The only bad workout is the one that didn't happen.', author: 'Unknown' },
-        { id: '3', text: 'Your health is an investment, not an expense.', author: 'Unknown' },
-        { id: '4', text: 'Strength does not come from the body. It comes from the will.', author: 'Mahatma Gandhi' },
-        { id: '5', text: 'Take care of your body. It\'s the only place you have to live.', author: 'Jim Rohn' }
+        { id: "1", text: "The body achieves what the mind believes.", author: "Napoleon Hill" },
+        { id: "2", text: "The only bad workout is the one that didn't happen.", author: "Unknown" },
+        { id: "3", text: "Your health is an investment, not an expense.", author: "Unknown" },
+        { id: "4", text: "Strength does not come from the body. It comes from the will.", author: "Mahatma Gandhi" },
+        { id: "5", text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn" }
       ];
       
       // Get a random quote from the fallback list
@@ -70,11 +70,11 @@ export const quoteService = {
       
       // Fallback health tips
       const fallbackTips = [
-        'Drink at least 8 glasses of water daily to stay hydrated.',
-        'Include at least 30 minutes of moderate exercise in your daily routine.',
-        'Eating a rainbow of colored fruits and vegetables ensures you get a variety of nutrients.',
-        'Taking short breaks to stretch during long periods of sitting improves circulation.',
-        'Sleep 7-9 hours per night to support muscle recovery and overall health.'
+        "Drink at least 8 glasses of water daily to stay hydrated.",
+        "Include at least 30 minutes of moderate exercise in your daily routine.",
+        "Eating a rainbow of colored fruits and vegetables ensures you get a variety of nutrients.",
+        "Taking short breaks to stretch during long periods of sitting improves circulation.",
+        "Sleep 7-9 hours per night to support muscle recovery and overall health."
       ];
       
       return fallbackTips[Math.floor(Math.random() * fallbackTips.length)];
