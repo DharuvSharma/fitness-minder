@@ -15,8 +15,8 @@ export const BottomNavbar = () => {
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Dumbbell, label: "Workouts", path: "/workouts" },
-    { icon: BarChart2, label: "Progress", path: "/progress" },
     { icon: Trophy, label: "Goals", path: "/goals" },
+    { icon: BarChart2, label: "Progress", path: "/progress" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
