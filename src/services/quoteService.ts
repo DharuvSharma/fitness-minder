@@ -1,3 +1,4 @@
+
 import api from './apiService';
 import { toast } from 'sonner';
 
@@ -45,7 +46,7 @@ export const quoteService = {
         { id: '2', text: 'The only bad workout is the one that didn't happen.', author: 'Unknown' },
         { id: '3', text: 'Your health is an investment, not an expense.', author: 'Unknown' },
         { id: '4', text: 'Strength does not come from the body. It comes from the will.', author: 'Mahatma Gandhi' },
-        { id: '5', text: 'Take care of your body. It's the only place you have to live.', author: 'Jim Rohn' }
+        { id: '5', text: 'Take care of your body. It\'s the only place you have to live.', author: 'Jim Rohn' }
       ];
       
       // Get a random quote from the fallback list
