@@ -1,20 +1,39 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Home, Dumbbell, BarChart2, Trophy, User } from 'lucide-react';
+import { Home, Dumbbell, BarChart2, Trophy, User, Settings, Calendar, InfoCircle, Bell, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Navigation = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   
-  const navItems = [
+  const mainNavItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Dumbbell, label: "Workouts", path: "/workouts" },
     { icon: Trophy, label: "Goals", path: "/goals" },
     { icon: BarChart2, label: "Progress", path: "/progress" },
+  ];
+  
+  const moreNavItems = [
+    { icon: Calendar, label: "Calendar", path: "/workout-calendar" },
+    { icon: InfoCircle, label: "About", path: "/about" },
+    { icon: Bell, label: "Notifications", path: "/notifications" },
+    { icon: Settings, label: "Settings", path: "/settings" },
+  ];
+  
+  // Add Profile to mobile items
+  const mobileNavItems = [
+    ...mainNavItems,
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
@@ -33,7 +52,7 @@ export const Navigation = () => {
           </Link>
           
           <div className="flex items-center gap-1">
-            {navItems.map((item) => {
+            {mainNavItems.map((item) => {
               const isActive = location.pathname === item.path;
               const Icon = item.icon;
               
@@ -60,6 +79,66 @@ export const Navigation = () => {
                 </Link>
               );
             })}
+
+            {/* More Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    "relative flex items-center gap-2 px-4 py-2 rounded-full transition-colors",
+                    moreNavItems.some(item => location.pathname === item.path)
+                      ? "text-primary font-medium" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                  <span>More</span>
+                  {dropdownOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {moreNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  
+                  return (
+                    <DropdownMenuItem key={item.path} asChild>
+                      <Link
+                        to={item.path}
+                        className={cn(
+                          "flex items-center gap-2 w-full",
+                          isActive ? "text-primary font-medium" : ""
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* User Profile - Always visible in desktop */}
+            <Link
+              to="/profile"
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2 rounded-full transition-colors",
+                location.pathname === "/profile" 
+                  ? "text-primary font-medium" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              {location.pathname === "/profile" && (
+                <motion.div
+                  layoutId="desktopNavIndicator"
+                  className="absolute inset-0 bg-primary/10 rounded-full"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <User className="h-4 w-4" />
+              <span>Profile</span>
+            </Link>
           </div>
         </div>
       </motion.div>
@@ -75,7 +154,7 @@ export const Navigation = () => {
       className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-border z-50 md:hidden"
     >
       <div className="flex justify-around items-center h-16">
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
           
