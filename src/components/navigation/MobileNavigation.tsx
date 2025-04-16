@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Home, Dumbbell, BarChart2, Trophy, User, History } from 'lucide-react';

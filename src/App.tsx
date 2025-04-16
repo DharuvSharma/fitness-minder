@@ -9,6 +9,7 @@ import WorkoutHistory from './pages/WorkoutHistory';
 import WorkoutCalendarView from './pages/WorkoutCalendarView';
 import Progress from './pages/Progress';
 import Goals from './pages/Goals';
+import Profile from './pages/Profile';
 import { Toaster } from '@/components/ui/sonner';
 import Navigation from '@/components/Navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -43,7 +44,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={
               <PrivateRoute>
-                <div>Profile Page</div>
+                <Profile />
               </PrivateRoute>
             } />
             <Route path="/" element={
