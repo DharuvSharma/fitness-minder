@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Home, Dumbbell, BarChart2, Trophy, User, Settings, Calendar, Info, Bell, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, Dumbbell, BarChart2, Trophy, User, Settings, Calendar, Info, Bell, ChevronDown, ChevronUp, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -103,6 +103,7 @@ export const DesktopNavigation = () => {
   ];
   
   const moreNavItems = [
+    { icon: History, label: "Workout History", path: "/workout-history" },
     { icon: Calendar, label: "Calendar", path: "/workout-calendar" },
     { icon: Info, label: "About", path: "/about" },
     { icon: Bell, label: "Notifications", path: "/notifications" },

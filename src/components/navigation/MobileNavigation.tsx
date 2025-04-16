@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Home, Dumbbell, BarChart2, Trophy, User } from 'lucide-react';
+import { Home, Dumbbell, BarChart2, Trophy, User, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -56,8 +55,8 @@ export const MobileNavigation = () => {
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Dumbbell, label: "Workouts", path: "/workouts" },
+    { icon: History, label: "History", path: "/workout-history" },
     { icon: Trophy, label: "Goals", path: "/goals" },
-    { icon: BarChart2, label: "Progress", path: "/progress" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
