@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Home, Dumbbell, BarChart2, Trophy, User, Settings, Calendar, InfoCircle, Bell, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, Dumbbell, BarChart2, Trophy, User, Settings, Calendar, Info, Bell, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -26,18 +25,16 @@ export const Navigation = () => {
   
   const moreNavItems = [
     { icon: Calendar, label: "Calendar", path: "/workout-calendar" },
-    { icon: InfoCircle, label: "About", path: "/about" },
+    { icon: Info, label: "About", path: "/about" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ];
   
-  // Add Profile to mobile items
   const mobileNavItems = [
     ...mainNavItems,
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
-  // Desktop Navigation
   if (!isMobile) {
     return (
       <motion.div 
@@ -80,7 +77,6 @@ export const Navigation = () => {
               );
             })}
 
-            {/* More Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -119,7 +115,6 @@ export const Navigation = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* User Profile - Always visible in desktop */}
             <Link
               to="/profile"
               className={cn(
@@ -145,7 +140,6 @@ export const Navigation = () => {
     );
   }
 
-  // Mobile Navigation
   return (
     <motion.div 
       initial={{ y: 100 }}
