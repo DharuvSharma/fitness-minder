@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import Navbar from '@/components/Navbar';
 import ProgressChart, { ProgressDataPoint } from '@/components/ProgressChart';
 import { Button } from '@/components/ui/button';
 import { workoutService } from '@/services/workoutService';
@@ -166,9 +165,7 @@ const Progress: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0 md:pt-20">
-      <Navbar />
-      
+    <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0">
       <div className="fitness-container pt-4 animate-fade-in">
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>

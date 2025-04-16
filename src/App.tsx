@@ -81,7 +81,7 @@ function App() {
             {/* New Routes */}
             <Route path="/about" element={
               <PrivateRoute>
-                <div className="container pt-6 mt-16">
+                <div className="container pt-6">
                   <h1 className="text-3xl font-bold">About FitnessMinder</h1>
                   <p className="mt-4">Your comprehensive fitness tracking solution.</p>
                 </div>
@@ -89,7 +89,7 @@ function App() {
             } />
             <Route path="/notifications" element={
               <PrivateRoute>
-                <div className="container pt-6 mt-16">
+                <div className="container pt-6">
                   <h1 className="text-3xl font-bold">Notifications</h1>
                   <p className="mt-4">You have no new notifications.</p>
                 </div>
@@ -97,7 +97,7 @@ function App() {
             } />
             <Route path="/settings" element={
               <PrivateRoute>
-                <div className="container pt-6 mt-16">
+                <div className="container pt-6">
                   <h1 className="text-3xl font-bold">Settings</h1>
                   <p className="mt-4">Configure your application settings here.</p>
                 </div>
