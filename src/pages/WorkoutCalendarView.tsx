@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
@@ -10,7 +9,6 @@ import {
   Calendar as CalendarIcon,
   List
 } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { Workout } from '@/types';
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { Button } from '@/components/ui/button';
@@ -98,9 +96,7 @@ const WorkoutCalendarView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0 md:pt-20">
-      <Navbar />
-      
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0">
       <div className="container mx-auto px-4 pt-6 animate-fade-in">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>

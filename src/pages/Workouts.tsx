@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Plus, Search, Filter, Calendar, ChevronDown, BellRing, Play } from 'lucide-react';
 import WorkoutCard from '@/components/WorkoutCard';
@@ -6,7 +5,6 @@ import AddWorkoutForm from '@/components/AddWorkoutForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Navbar from '@/components/Navbar';
 import { workoutService } from '@/services/workoutService';
 import { Workout, WorkoutFormData } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -140,9 +138,7 @@ const Workouts: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0 md:pt-20">
-      <Navbar />
-      
+    <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0">
       <div className="fitness-container pt-4 animate-fade-in">
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>

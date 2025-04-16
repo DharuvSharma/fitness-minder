@@ -8,7 +8,6 @@ import {
   User,
   HelpCircle
 } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import ProgressChart from '@/components/ProgressChart';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import AchievementTracker from '@/components/AchievementTracker';
@@ -88,8 +87,8 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0 md:pt-20">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0">
+      
       
       <motion.div 
         className="container mx-auto px-4 pt-6"
