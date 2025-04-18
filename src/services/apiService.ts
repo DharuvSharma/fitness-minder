@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -6,7 +5,7 @@ import { toast } from 'sonner';
  * Create an axios instance with default configuration.
  */
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', 
+  baseURL: '/api', // Use relative path for production compatibility
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -56,6 +55,14 @@ api.interceptors.response.use(
       }
       
       switch (error.response.status) {
+        case 401:
+          toast.error('Authentication required. Please log in again.');
+          // Redirect to login page if necessary
+          window.location.href = '/login';
+          break;
+        case 403:
+          toast.error('You do not have permission to access this resource.');
+          break;
         case 404:
           toast.error('Resource not found.');
           break;
@@ -91,11 +98,10 @@ api.interceptors.request.use(
       }
     }
 
-    // Set the API version for versioned endpoints
-    // We can conditionally set v1 or v2 based on app requirements
-    // For now, let's use the default v1
-    if (!config.url?.startsWith('/v')) {
-      config.url = '/v1' + config.url;
+    // Add auth token from localStorage if available
+    const token = localStorage.getItem('fitness_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     
     return config;
@@ -271,6 +277,51 @@ export const streakApi = {
       console.error('Error fetching user streak:', error);
       throw error;
     }
+  }
+};
+
+// Auth API functions
+export const authApi = {
+  login: async (credentials) => {
+    try {
+      const response = await axios.post('/api/auth/login', credentials);
+      const { token, user } = response.data;
+      
+      // Store token and user data
+      localStorage.setItem('fitness_token', token);
+      localStorage.setItem('fitness_user', JSON.stringify(user));
+      
+      return { token, user };
+    } catch (error) {
+      console.error('Login failed:', error);
+      const message = error.response?.data?.message || 'Login failed';
+      toast.error(message);
+      throw error;
+    }
+  },
+  
+  register: async (userData) => {
+    try {
+      const response = await axios.post('/api/auth/register', userData);
+      toast.success('Registration successful! Please log in.');
+      return response.data;
+    } catch (error) {
+      console.error('Registration failed:', error);
+      const message = error.response?.data?.message || 'Registration failed';
+      toast.error(message);
+      throw error;
+    }
+  },
+  
+  logout: () => {
+    localStorage.removeItem('fitness_token');
+    localStorage.removeItem('fitness_user');
+    window.location.href = '/login';
+  },
+  
+  getCurrentUser: () => {
+    const user = localStorage.getItem('fitness_user');
+    return user ? JSON.parse(user) : null;
   }
 };
 

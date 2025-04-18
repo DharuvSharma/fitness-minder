@@ -9,43 +9,52 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Dumbbell } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import LoadingSpinner from '@/components/LoadingSpinner';
 
 // Define form validation schema with Zod
-const loginSchema = z.object({
+const registerSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  confirmPassword: z.string().min(6, { message: "Confirm your password" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-const Login = () => {
-  const { login, isLoading } = useAuth();
+const Register = () => {
+  const { register } = useAuth();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Initialize form with react-hook-form
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
   // Form submission handler
-  const onSubmit = async (values: LoginFormValues) => {
+  const onSubmit = async (values: RegisterFormValues) => {
+    setIsSubmitting(true);
     try {
-      await login(values.email, values.password);
-      navigate('/dashboard');
+      await register({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      });
+      navigate('/login');
     } catch (error) {
-      console.error("Login error:", error);
-      // Error is handled by the login function
+      console.error("Registration error:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  if (isLoading) {
-    return <LoadingSpinner message="Authenticating..." />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4">
@@ -62,14 +71,32 @@ const Login = () => {
                 <span>Minder</span>
               </h1>
               <p className="text-sm text-muted-foreground mt-2">
-                Sign in to access your fitness dashboard
+                Create your account to start your fitness journey
               </p>
             </div>
           </div>
 
-          {/* Login Form */}
+          {/* Register Form */}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter your name" 
+                        {...field} 
+                        className="h-11"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <FormField
                 control={form.control}
                 name="email"
@@ -97,7 +124,26 @@ const Login = () => {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Enter your password" 
+                        placeholder="Create a password" 
+                        type="password" 
+                        {...field} 
+                        className="h-11"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Confirm your password" 
                         type="password" 
                         {...field} 
                         className="h-11"
@@ -112,19 +158,10 @@ const Login = () => {
                 <Button 
                   type="submit" 
                   className="w-full h-11 bg-[#61DAFB] hover:bg-[#4ecca3] text-white font-medium"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 >
-                  {isLoading ? "Signing in..." : "Sign In"}
+                  {isSubmitting ? "Creating Account..." : "Create Account"}
                 </Button>
-              </div>
-
-              <div className="flex justify-between items-center text-sm pt-2">
-                <Link to="/forgot-password" className="text-[#61DAFB] hover:underline">
-                  Forgot Password?
-                </Link>
-                <Link to="/register" className="text-[#61DAFB] hover:underline">
-                  Create Account
-                </Link>
               </div>
             </form>
           </Form>
@@ -132,11 +169,11 @@ const Login = () => {
         
         {/* Footer */}
         <div className="text-center mt-6 text-xs text-muted-foreground">
-          <p>Don't have an account? <Link to="/register" className="text-[#61DAFB] hover:underline">Sign up now</Link></p>
+          <p>Already have an account? <Link to="/login" className="text-[#61DAFB] hover:underline">Sign in</Link></p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Register;
