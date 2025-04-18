@@ -1,131 +1,82 @@
 
-import React, { useState } from 'react';
-import { User, Settings, LogOut, Bell } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import React from 'react';
+import { User, Mail, MapPin, Calendar, Workflow } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { notificationService } from '@/services/notificationService';
-import { toast } from 'sonner';
-import { registerForPushNotifications } from '@/services/notificationService';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
 interface UserProfileProps {
   className?: string;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ className }) => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [syncEnabled, setSyncEnabled] = useState(true);
-  
-  const handleNotificationChange = async (checked: boolean) => {
-    setNotificationsEnabled(checked);
-    
-    if (checked) {
-      // Ask for permission and register for notifications
-      const registered = await registerForPushNotifications();
-      
-      if (registered) {
-        await notificationService.subscribeToWorkoutReminders({
-          enabled: true,
-          frequency: 'daily',
-          time: '09:00'
-        });
-        
-        await notificationService.subscribeToGoalUpdates(true);
-        
-        // Show a test notification
-        notificationService.showLocalNotification(
-          'Notifications Enabled', 
-          'You will now receive workout reminders and goal updates.',
-          'system'
-        );
-      } else {
-        toast.error('Could not enable notifications. Please check your browser settings.');
-        setNotificationsEnabled(false);
-      }
-    } else {
-      // Disable notifications
-      await notificationService.subscribeToWorkoutReminders({
-        enabled: false,
-        frequency: 'daily'
-      });
-      
-      await notificationService.subscribeToGoalUpdates(false);
-      toast('Notifications disabled');
+  // This would come from a real API or auth service in a real app
+  const userData = {
+    name: "Alex Johnson",
+    username: "alexj",
+    email: "alex@example.com",
+    location: "San Francisco, CA",
+    memberSince: "January 2023",
+    fitnessLevel: "Intermediate",
+    avatarUrl: "",
+    stats: {
+      workoutsCompleted: 27,
+      currentStreak: 5,
+      totalMinutes: 843,
+      caloriesBurned: 9254
     }
-  };
-  
-  const handleSyncChange = (checked: boolean) => {
-    setSyncEnabled(checked);
-    if (checked) {
-      toast.success('Cloud sync enabled');
-    } else {
-      toast.info('Cloud sync disabled - your data will be stored locally only');
-    }
-  };
-  
-  const handleLogout = () => {
-    // This would be replaced with actual logout logic
-    toast.info('Logging out...');
-    setTimeout(() => {
-      window.location.href = '/login';
-    }, 1500);
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm p-6 ${className}`}>
-      <div className="flex items-center mb-6">
-        <Avatar className="h-16 w-16 mr-4">
-          <AvatarImage src="https://github.com/shadcn.png" alt="User" />
-          <AvatarFallback>
-            <User className="h-8 w-8" />
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h2 className="text-xl font-bold">John Doe</h2>
-          <p className="text-gray-500 text-sm">Fitness Enthusiast</p>
+    <Card className={cn("overflow-hidden", className)}>
+      <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6">
+        <div className="flex flex-col items-center">
+          <Avatar className="h-24 w-24 border-4 border-white">
+            <AvatarImage src={userData.avatarUrl} alt={userData.name} />
+            <AvatarFallback className="text-2xl bg-indigo-300 text-indigo-800">
+              {userData.name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
+          <h2 className="text-xl font-bold mt-4">{userData.name}</h2>
+          <p className="text-indigo-100 text-sm">@{userData.username}</p>
         </div>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Bell className="h-5 w-5 mr-3 text-gray-600" />
-            <div>
-              <h3 className="font-medium">Notifications</h3>
-              <p className="text-sm text-gray-500">Get workout reminders and updates</p>
-            </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <div className="flex items-center text-sm">
+            <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>{userData.email}</span>
           </div>
-          <Switch 
-            checked={notificationsEnabled} 
-            onCheckedChange={handleNotificationChange} 
-          />
+          <div className="flex items-center text-sm">
+            <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>{userData.location}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>Member since {userData.memberSince}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Workflow className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>Fitness Level: {userData.fitnessLevel}</span>
+          </div>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Settings className="h-5 w-5 mr-3 text-gray-600" />
-            <div>
-              <h3 className="font-medium">Cloud Sync</h3>
-              <p className="text-sm text-gray-500">Sync data across devices</p>
-            </div>
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg text-center">
+            <p className="text-xl font-semibold">{userData.stats.workoutsCompleted}</p>
+            <p className="text-xs text-muted-foreground">Workouts</p>
           </div>
-          <Switch 
-            checked={syncEnabled} 
-            onCheckedChange={handleSyncChange} 
-          />
+          <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg text-center">
+            <p className="text-xl font-semibold">{userData.stats.currentStreak} days</p>
+            <p className="text-xs text-muted-foreground">Current Streak</p>
+          </div>
         </div>
-        
-        <Button 
-          variant="outline" 
-          className="w-full mt-4 flex items-center justify-center"
-          onClick={handleLogout}
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign Out
-        </Button>
-      </div>
-    </div>
+      </CardContent>
+      <CardFooter className="border-t bg-slate-50 dark:bg-slate-900 px-6 py-4">
+        <Button variant="outline" className="w-full">Edit Profile</Button>
+      </CardFooter>
+    </Card>
   );
 };
 

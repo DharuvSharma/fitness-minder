@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Home, Dumbbell, BarChart2, Trophy, User, Settings, Calendar, Info, Bell, ChevronDown, ChevronUp, History } from 'lucide-react';
