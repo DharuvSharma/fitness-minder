@@ -19,11 +19,21 @@ public class UserDetailsImpl implements UserDetails {
     private String username;
     private String email;
     private String password;
+    private String name;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public static UserDetailsImpl build(String id, String username, String email, String password) {
+    public static UserDetailsImpl build(String id, String username, String email, String password, String name) {
         Collection<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-        return new UserDetailsImpl(id, username, email, password, authorities);
+        return new UserDetailsImpl(id, username, email, password, name, authorities);
+    }
+
+    // Overloaded build method for backward compatibility
+    public static UserDetailsImpl build(String id, String username, String email, String password) {
+        return build(id, username, email, password, username); // Default name to username
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
