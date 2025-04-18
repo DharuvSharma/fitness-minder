@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkouts } from '@/hooks/useWorkouts';
@@ -8,21 +9,27 @@ import WorkoutAnalytics from '@/components/WorkoutAnalytics';
 import WorkoutReminder from '@/components/WorkoutReminder';
 import AchievementTracker from '@/components/AchievementTracker';
 import RecentWorkouts from '@/features/Dashboard/RecentWorkouts';
+import { goalService } from '@/services/goalService';
+import { useEffect as useEffectHook } from 'react';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { workouts, isLoading, addWorkout, updateWorkout } = useWorkouts(7); // Load workouts for the last 7 days
-  const [quote, setQuote] = useState({ text: '', author: '' });
+  const [goals, setGoals] = useState([]);
   const [isAddingWorkout, setIsAddingWorkout] = useState(false);
 
   useEffect(() => {
-    fetch('https://type.fit/api/quotes')
-      .then(res => res.json())
-      .then(data => {
-        const randomIndex = Math.floor(Math.random() * data.length);
-        setQuote(data[randomIndex]);
-      })
-      .catch(error => console.error("Failed to fetch quote:", error));
+    // Fetch goals when component mounts
+    const fetchGoals = async () => {
+      try {
+        const fetchedGoals = await goalService.getGoals();
+        setGoals(fetchedGoals);
+      } catch (error) {
+        console.error("Failed to fetch goals:", error);
+      }
+    };
+    
+    fetchGoals();
   }, []);
 
   const handleAddWorkout = () => {
@@ -50,6 +57,10 @@ const Dashboard: React.FC = () => {
     navigate('/workout-calendar');
   };
 
+  const handleCreateGoal = () => {
+    navigate('/goals');
+  };
+
   return (
     <div className="min-h-screen bg-fitness-lightgray pb-20 md:pb-0">
       <div className="fitness-container pt-4 animate-fade-in">
@@ -60,14 +71,14 @@ const Dashboard: React.FC = () => {
           </p>
         </header>
 
-        <DailyQuote quote={quote} />
+        <DailyQuote className="mb-6" />
 
-        <DashboardStats workouts={workouts} isLoading={isLoading} />
+        <DashboardStats workouts={workouts} goals={goals} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <WorkoutAnalytics workouts={workouts} />
           <WorkoutReminder />
-          <AchievementTracker workouts={workouts} />
+          <AchievementTracker goals={goals} onCreateGoal={handleCreateGoal} />
         </div>
 
         <RecentWorkouts
