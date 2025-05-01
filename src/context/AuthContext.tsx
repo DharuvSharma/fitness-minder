@@ -34,11 +34,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkAuthStatus = () => {
+    // Check if user is already logged in on mount
+    const checkAuthStatus = async () => {
+      setIsLoading(true);
       try {
-        const currentUser = authApi.getCurrentUser();
-        setUser(currentUser);
+        const token = localStorage.getItem('fitness_token');
+        if (token) {
+          const currentUser = authApi.getCurrentUser();
+          if (currentUser) {
+            setUser(currentUser);
+          }
+        }
       } catch (error) {
         console.error('Error checking auth status:', error);
       } finally {
@@ -52,11 +58,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { user } = await authApi.login({ email, password });
+      const { user, token } = await authApi.login({ email, password });
       setUser(user);
       toast.success(`Welcome back, ${user.name}!`);
     } catch (error) {
       console.error('Login error:', error);
+      toast.error('Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -65,15 +72,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     authApi.logout();
     setUser(null);
-    toast.success('You have been logged out');
+    toast.success('You have been logged out successfully');
   };
 
   const register = async (userData: any) => {
     setIsLoading(true);
     try {
       await authApi.register(userData);
+      toast.success('Registration successful! Please log in.');
+      return Promise.resolve();
     } catch (error) {
       console.error('Registration error:', error);
+      toast.error('Registration failed. Please try again.');
+      return Promise.reject(error);
     } finally {
       setIsLoading(false);
     }

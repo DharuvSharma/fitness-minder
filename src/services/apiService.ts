@@ -5,7 +5,7 @@ import { toast } from 'sonner';
  * Create an axios instance with default configuration.
  */
 const api = axios.create({
-  baseURL: '/api', // Use relative path for production compatibility
+  baseURL: import.meta.env.PROD ? '/api' : 'http://localhost:8080/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ api.interceptors.response.use(
   (error) => {
     if (!error.response) {
       console.error('Network Error:', error);
-      toast.error('Network error, please try again later.');
+      toast.error('Network error, please check your connection and try again.');
       return Promise.reject(error);
     }
     
@@ -57,7 +57,9 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           toast.error('Authentication required. Please log in again.');
-          // Redirect to login page if necessary
+          // Clear authentication if token is invalid
+          localStorage.removeItem('fitness_token');
+          localStorage.removeItem('fitness_user');
           window.location.href = '/login';
           break;
         case 403:
@@ -110,6 +112,60 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// Auth API functions
+export const authApi = {
+  login: async (credentials) => {
+    try {
+      const response = await axios.post((import.meta.env.PROD ? '/api' : 'http://localhost:8080/api') + '/auth/login', credentials);
+      const { token, user } = response.data;
+      
+      // Store token and user data
+      localStorage.setItem('fitness_token', token);
+      localStorage.setItem('fitness_user', JSON.stringify(user));
+      
+      return { token, user };
+    } catch (error) {
+      console.error('Login failed:', error);
+      const message = error.response?.data?.message || 'Login failed';
+      toast.error(message);
+      throw error;
+    }
+  },
+  
+  register: async (userData) => {
+    try {
+      const response = await axios.post((import.meta.env.PROD ? '/api' : 'http://localhost:8080/api') + '/auth/register', userData);
+      toast.success('Registration successful! Please log in.');
+      return response.data;
+    } catch (error) {
+      console.error('Registration failed:', error);
+      const message = error.response?.data?.message || 'Registration failed';
+      toast.error(message);
+      throw error;
+    }
+  },
+  
+  logout: () => {
+    localStorage.removeItem('fitness_token');
+    localStorage.removeItem('fitness_user');
+  },
+  
+  getCurrentUser: () => {
+    const user = localStorage.getItem('fitness_user');
+    return user ? JSON.parse(user) : null;
+  },
+
+  checkAuthStatus: async () => {
+    try {
+      const response = await api.get('/auth/status');
+      return response.data;
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      return null;
+    }
+  }
+};
 
 // Workout API functions
 export const workoutApi = {
@@ -277,51 +333,6 @@ export const streakApi = {
       console.error('Error fetching user streak:', error);
       throw error;
     }
-  }
-};
-
-// Auth API functions
-export const authApi = {
-  login: async (credentials) => {
-    try {
-      const response = await axios.post('/api/auth/login', credentials);
-      const { token, user } = response.data;
-      
-      // Store token and user data
-      localStorage.setItem('fitness_token', token);
-      localStorage.setItem('fitness_user', JSON.stringify(user));
-      
-      return { token, user };
-    } catch (error) {
-      console.error('Login failed:', error);
-      const message = error.response?.data?.message || 'Login failed';
-      toast.error(message);
-      throw error;
-    }
-  },
-  
-  register: async (userData) => {
-    try {
-      const response = await axios.post('/api/auth/register', userData);
-      toast.success('Registration successful! Please log in.');
-      return response.data;
-    } catch (error) {
-      console.error('Registration failed:', error);
-      const message = error.response?.data?.message || 'Registration failed';
-      toast.error(message);
-      throw error;
-    }
-  },
-  
-  logout: () => {
-    localStorage.removeItem('fitness_token');
-    localStorage.removeItem('fitness_user');
-    window.location.href = '/login';
-  },
-  
-  getCurrentUser: () => {
-    const user = localStorage.getItem('fitness_user');
-    return user ? JSON.parse(user) : null;
   }
 };
 

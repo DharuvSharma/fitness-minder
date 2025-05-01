@@ -6,19 +6,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping({"/api/health", "/api/v1/health"})
+@RequestMapping("/api/health")
 public class HealthController {
-
+    
     @GetMapping
-    public ResponseEntity<?> healthCheck() {
+    public ResponseEntity<Map<String, Object>> healthCheck() {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");
-        response.put("message", "API is running");
-        response.put("timestamp", System.currentTimeMillis());
+        response.put("timestamp", LocalDateTime.now().toString());
+        response.put("message", "FitnessMinder API is running");
         
         return ResponseEntity.ok(response);
     }
