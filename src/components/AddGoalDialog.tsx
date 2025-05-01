@@ -30,7 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { GoalType, goalService } from '@/services/goalService';
+import { goalService } from '@/services/goalService';
+import { GoalType } from '@/types';
 import { toast } from 'sonner';
 
 const goalFormSchema = z.object({
@@ -46,7 +47,7 @@ const goalFormSchema = z.object({
   current: z.coerce.number().min(0, {
     message: "Current value must be at least 0.",
   }),
-  type: z.enum(['weight', 'strength', 'endurance', 'habit', 'custom'] as const),
+  type: z.enum(['weight', 'strength', 'endurance', 'habit', 'custom', 'workout', 'steps', 'distance', 'calories'] as const),
   deadline: z.string().optional(),
 });
 
@@ -214,6 +215,10 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({
                       <SelectItem value="strength">Strength</SelectItem>
                       <SelectItem value="endurance">Endurance</SelectItem>
                       <SelectItem value="habit">Habit</SelectItem>
+                      <SelectItem value="workout">Workout</SelectItem>
+                      <SelectItem value="steps">Steps</SelectItem>
+                      <SelectItem value="distance">Distance</SelectItem>
+                      <SelectItem value="calories">Calories</SelectItem>
                       <SelectItem value="custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>

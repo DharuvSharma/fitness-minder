@@ -11,8 +11,8 @@ export interface Goal {
   deadline?: string;
 }
 
-export type GoalType = 'weight' | 'workout' | 'steps' | 'distance' | 'calories' | 'custom';
-export type GoalStatus = 'in-progress' | 'completed' | 'missed';
+export type GoalType = 'weight' | 'workout' | 'steps' | 'distance' | 'calories' | 'custom' | 'strength' | 'endurance' | 'habit';
+export type GoalStatus = 'in-progress' | 'completed' | 'missed' | 'not-started';
 
 export interface GoalFormData {
   title: string;

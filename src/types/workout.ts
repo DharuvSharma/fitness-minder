@@ -12,7 +12,7 @@ export interface Workout {
   exercises?: Exercise[];
 }
 
-export type WorkoutType = 'cardio' | 'strength' | 'flexibility' | 'hiit' | 'custom';
+export type WorkoutType = 'cardio' | 'strength' | 'flexibility' | 'hiit' | 'custom' | 'balance' | 'sport' | 'other';
 export type WorkoutIntensity = 'low' | 'medium' | 'high';
 
 export interface Exercise {
@@ -33,5 +33,6 @@ export interface WorkoutFormData {
   calories: number;
   notes?: string;
   date: string;
-  exercises?: Exercise[];
+  exercises?: Exercise[] | string;
+  completed?: boolean;
 }

@@ -1,204 +1,121 @@
 
-import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Target, CheckCircle, Circle, Trash2, Calendar, Edit, X, Save } from 'lucide-react';
+import React from 'react';
+import { Circle, CheckCircle, XCircle, AlertCircle, Edit, Trash, ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { GoalStatus, GoalType, Goal } from '@/types/goal';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Goal, GoalStatus, GoalType } from '@/types';
+import { formatDistance } from 'date-fns';
 
-export interface GoalCardProps extends Omit<Goal, 'createdAt'> {
-  onComplete: () => void;
-  onDelete: () => void;
-  onProgressUpdate: (value: number) => void;
-  className?: string;
-  style?: React.CSSProperties;
+interface GoalCardProps {
+  goal: Goal;
+  onEdit?: (goal: Goal) => void;
+  onDelete?: (goalId: string) => void;
+  onToggleStatus?: (goal: Goal) => void;
 }
 
-const statusIcons: Record<GoalStatus, React.ReactNode> = {
-  'completed': <CheckCircle className="w-5 h-5 text-green-500" />,
-  'in-progress': <Target className="w-5 h-5 text-fitness-accent" />,
-  'not-started': <Circle className="w-5 h-5 text-muted-foreground" />,
-};
-
-const typeColors: Record<GoalType, string> = {
-  weight: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300',
-  strength: 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300',
-  endurance: 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-300',
-  habit: 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-300',
-  custom: 'bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-300',
-};
-
-const typeLabels: Record<GoalType, string> = {
-  weight: 'Weight',
-  strength: 'Strength',
-  endurance: 'Endurance',
-  habit: 'Habit',
-  custom: 'Custom',
-};
-
-const GoalCard: React.FC<GoalCardProps> = ({
-  id,
-  title,
-  description,
-  target,
-  current,
-  type,
-  status,
-  deadline,
-  progress,
-  onComplete,
-  onDelete,
-  onProgressUpdate,
-  className,
-  style,
-}) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentValue, setCurrentValue] = useState(current);
-  
-  const formattedDeadline = deadline 
-    ? new Date(deadline).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      })
-    : null;
-  
-  const handleSaveProgress = () => {
-    onProgressUpdate(Number(currentValue));
-    setIsEditing(false);
+const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onToggleStatus }) => {
+  // Status icons mapping
+  const statusIcons: Record<GoalStatus, React.ReactNode> = {
+    'completed': <CheckCircle className="h-5 w-5 text-green-500" />,
+    'in-progress': <Circle className="h-5 w-5 text-blue-500" />,
+    'missed': <XCircle className="h-5 w-5 text-red-500" />,
+    'not-started': <AlertCircle className="h-5 w-5 text-gray-500" />
   };
 
-  const isCompleted = status === 'completed';
+  // Color mapping for goal types
+  const typeColors: Record<GoalType, string> = {
+    'weight': 'bg-purple-100 text-purple-800',
+    'workout': 'bg-blue-100 text-blue-800',
+    'steps': 'bg-green-100 text-green-800',
+    'distance': 'bg-yellow-100 text-yellow-800',
+    'calories': 'bg-orange-100 text-orange-800',
+    'custom': 'bg-gray-100 text-gray-800',
+    'strength': 'bg-red-100 text-red-800',
+    'endurance': 'bg-teal-100 text-teal-800',
+    'habit': 'bg-indigo-100 text-indigo-800'
+  };
+
+  // Emoji mapping for goal types
+  const typeEmojis: Record<GoalType, string> = {
+    'weight': '⚖️',
+    'workout': '🏋️',
+    'steps': '👣',
+    'distance': '🏃',
+    'calories': '🔥',
+    'custom': '🎯',
+    'strength': '💪',
+    'endurance': '⏱️',
+    'habit': '📅'
+  };
+
+  const formattedDeadline = goal.deadline ? new Date(goal.deadline) : null;
+  const timeToDeadline = formattedDeadline ? 
+    formatDistance(formattedDeadline, new Date(), { addSuffix: true }) : 
+    null;
   
+  const handleEdit = () => onEdit && onEdit(goal);
+  const handleDelete = () => onDelete && onDelete(goal.id);
+  const handleStatusToggle = () => onToggleStatus && onToggleStatus(goal);
+
   return (
-    <Card 
-      className={cn(
-        "overflow-hidden transition-all hover:shadow-md",
-        isCompleted && "opacity-80",
-        className
-      )}
-      style={style}
-    >
-      <div className={cn(
-        "h-1.5",
-        progress >= 100 ? "bg-green-500" : "bg-fitness-accent"
-      )} 
-      style={{ width: `${progress}%` }}
-      />
-      
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between mb-3">
+    <Card className="overflow-hidden transition-all hover:shadow-md">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
           <div>
-            <span className={cn(
-              "text-xs py-1 px-2 rounded-full inline-block mb-2",
-              typeColors[type]
-            )}>
-              {typeLabels[type]}
+            <span className={`inline-block px-2 py-1 text-xs rounded-full ${typeColors[goal.type]}`}>
+              {typeEmojis[goal.type]} {goal.type.charAt(0).toUpperCase() + goal.type.slice(1)}
             </span>
-            <h3 className="text-lg font-medium leading-tight">{title}</h3>
+            <CardTitle className="mt-2 text-lg">{goal.title}</CardTitle>
+            <CardDescription className="text-sm text-gray-500">
+              {goal.description || "No description provided"}
+            </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            {statusIcons[status]}
-            <button 
-              onClick={onDelete} 
-              className="text-muted-foreground hover:text-destructive transition-colors"
-              aria-label="Delete goal"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
+          <div>{statusIcons[goal.status]}</div>
         </div>
-        
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{description}</p>
-        
+      </CardHeader>
+      
+      <CardContent className="pb-2">
         <div className="mb-4">
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-xs text-muted-foreground">Progress</span>
-            <span className="text-xs font-medium">{progress}%</span>
+          <div className="flex justify-between items-center text-sm mb-1">
+            <span>Progress</span>
+            <span className="font-medium">{goal.current} / {goal.target}</span>
           </div>
-          <Progress value={progress} className="h-1.5" />
-        </div>
-        
-        <div className="flex justify-between items-center mb-4">
-          {!isEditing ? (
-            <>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Current</span>
-                <span className="text-sm font-medium">{current}</span>
-              </div>
-              
-              <div className="h-8 border-r border-border/50" />
-              
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Target</span>
-                <span className="text-sm font-medium">{target}</span>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center w-full gap-2">
-              <div className="flex-1">
-                <span className="text-xs text-muted-foreground">Current Value</span>
-                <Input 
-                  type="number" 
-                  value={currentValue} 
-                  onChange={(e) => setCurrentValue(Number(e.target.value))}
-                  className="h-8 mt-1"
-                />
-              </div>
-              <Button size="sm" onClick={handleSaveProgress} className="mt-5">
-                <Save size={16} />
-              </Button>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={() => {
-                  setCurrentValue(current);
-                  setIsEditing(false);
-                }}
-                className="mt-5"
-              >
-                <X size={16} />
-              </Button>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex items-center justify-between">
-          {formattedDeadline && (
-            <div className="flex items-center text-xs text-muted-foreground">
-              <Calendar size={14} className="mr-1" />
-              <span>{formattedDeadline}</span>
-            </div>
-          )}
-          
-          <div className="flex gap-2">
-            {!isEditing && !isCompleted && (
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={() => setIsEditing(true)}
-                className="h-8 text-xs"
-              >
-                <Edit size={14} className="mr-1" />
-                Update
-              </Button>
-            )}
-            
-            {!isCompleted && (
-              <Button 
-                size="sm" 
-                onClick={onComplete} 
-                className="h-8 text-xs"
-              >
-                <CheckCircle size={14} className="mr-1" />
-                Complete
-              </Button>
-            )}
+          <Progress value={goal.progress} className="h-2" />
+          <div className="text-right text-xs text-gray-500 mt-1">
+            {goal.progress}% complete
           </div>
         </div>
+        
+        {timeToDeadline && (
+          <div className="text-sm text-gray-500">
+            {new Date(goal.deadline as string) < new Date() ? 
+              <span className="text-red-500">Deadline passed {timeToDeadline}</span> : 
+              <span>Due {timeToDeadline}</span>}
+          </div>
+        )}
       </CardContent>
+      
+      <CardFooter className="flex justify-between pt-2">
+        <div className="flex space-x-2">
+          {onEdit && (
+            <Button variant="outline" size="sm" onClick={handleEdit}>
+              <Edit className="h-4 w-4 mr-1" /> Edit
+            </Button>
+          )}
+          {onDelete && (
+            <Button variant="outline" size="sm" className="text-red-500" onClick={handleDelete}>
+              <Trash className="h-4 w-4 mr-1" /> Delete
+            </Button>
+          )}
+        </div>
+        
+        {onToggleStatus && (
+          <Button size="sm" variant="ghost" className="text-blue-500" onClick={handleStatusToggle}>
+            Update <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };

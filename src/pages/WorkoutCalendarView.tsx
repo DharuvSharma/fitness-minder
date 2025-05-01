@@ -1,266 +1,236 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
-import moment from 'moment';
-import { format, parseISO } from 'date-fns';
-import { 
-  ListFilter, 
-  Plus, 
-  Calendar as CalendarIcon,
-  List
-} from 'lucide-react';
-import { Workout } from '@/types';
-import { useWorkouts } from '@/hooks/useWorkouts';
-import { Button } from '@/components/ui/button';
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import AddWorkoutForm from '@/components/AddWorkoutForm';
-import EditWorkoutForm from '@/components/EditWorkoutForm';
+
+import React, { useState } from 'react';
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
+import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { useWorkouts } from '@/hooks/useWorkouts';
+import { Workout, Exercise } from '@/types';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import AddWorkoutForm from '@/components/AddWorkoutForm';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { Dumbbell, Clock, Flame, Check, Info } from 'lucide-react';
 
-// Set up the localizer for the calendar
-const localizer = momentLocalizer(moment);
+const locales = {
+  'en-US': enUS,
+};
 
-const WorkoutCalendarView: React.FC = () => {
-  const navigate = useNavigate();
-  const { workouts, isLoading, addWorkout, updateWorkout } = useWorkouts(90); // 90 days of history
-  const [events, setEvents] = useState<any[]>([]);
-  const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
-  const [isEditWorkoutOpen, setIsEditWorkoutOpen] = useState(false);
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
+
+const WorkoutCalendarView = () => {
+  const { workouts, isLoading, addWorkout } = useWorkouts(90); // Get 90 days of workouts for calendar view
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [isWorkoutDetailsOpen, setIsWorkoutDetailsOpen] = useState(false);
+  const [isAddWorkoutOpen, setIsAddWorkoutOpen] = useState(false);
   
-  // Transform workouts to calendar events
-  useEffect(() => {
-    if (workouts) {
-      const mappedEvents = workouts.map(workout => ({
-        id: workout.id,
-        title: workout.title,
-        start: new Date(workout.date),
-        end: new Date(workout.date),
-        workout: workout, // Store the full workout object for reference
-        status: workout.completed ? 'completed' : 'planned'
-      }));
-      setEvents(mappedEvents);
-    }
-  }, [workouts]);
-
+  if (isLoading) {
+    return <LoadingSpinner message="Loading workout calendar..." />;
+  }
+  
+  // Format workouts for the calendar
+  const calendarEvents = workouts.map(workout => ({
+    id: workout.id,
+    title: workout.title,
+    start: new Date(workout.date),
+    end: new Date(workout.date),
+    allDay: true,
+    resource: workout,
+  }));
+  
+  // Handle event selection
   const handleSelectEvent = (event: any) => {
-    setSelectedWorkout(event.workout);
+    setSelectedWorkout(event.resource);
     setIsWorkoutDetailsOpen(true);
   };
-
-  const handleSelectSlot = ({ start }: { start: Date }) => {
-    setIsAddWorkoutOpen(true);
+  
+  // Handle date selection
+  const handleSelectSlot = (slotInfo: any) => {
+    // We could open the add workout form here pre-populated with the selected date
+    console.log('Slot selected:', slotInfo);
   };
-
-  const handleAddWorkout = async (data: any) => {
-    await addWorkout(data);
+  
+  // Handler for adding a workout
+  const handleAddWorkout = (workoutData: any) => {
+    addWorkout({
+      ...workoutData,
+      completed: false,
+    });
     setIsAddWorkoutOpen(false);
   };
 
-  const handleEditWorkout = () => {
-    setIsWorkoutDetailsOpen(false);
-    setIsEditWorkoutOpen(true);
-  };
-
-  const handleEditSubmit = async (data: Partial<Workout>) => {
-    if (selectedWorkout) {
-      await updateWorkout(selectedWorkout.id, data);
-      setIsEditWorkoutOpen(false);
-      setSelectedWorkout(null);
-    }
-  };
-
-  // Custom event component to style events differently based on their status
-  const EventComponent = ({ event }: { event: any }) => {
-    const isCompleted = event.status === 'completed';
+  // Function to render workout type badge based on type
+  const renderWorkoutTypeBadge = (type: string) => {
+    const colorMap: Record<string, string> = {
+      'cardio': 'bg-blue-100 text-blue-800',
+      'strength': 'bg-red-100 text-red-800',
+      'flexibility': 'bg-purple-100 text-purple-800',
+      'hiit': 'bg-orange-100 text-orange-800',
+      'balance': 'bg-green-100 text-green-800',
+      'sport': 'bg-yellow-100 text-yellow-800',
+      'custom': 'bg-gray-100 text-gray-800',
+      'other': 'bg-teal-100 text-teal-800'
+    };
     
     return (
-      <div 
-        className={`p-1 text-xs rounded truncate ${
-          isCompleted 
-            ? 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300' 
-            : 'bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
-        }`}
-      >
-        {event.title}
-      </div>
+      <Badge className={`${colorMap[type] || colorMap.other}`}>
+        {type.charAt(0).toUpperCase() + type.slice(1)}
+      </Badge>
+    );
+  };
+  
+  // Format exercises for display
+  const formatExercises = (exercises: string | Exercise[] | undefined) => {
+    if (!exercises) return <p className="text-muted-foreground">No exercises recorded</p>;
+    
+    if (typeof exercises === 'string') {
+      return <p>{exercises}</p>;
+    }
+    
+    return (
+      <ul className="list-disc pl-5 space-y-1">
+        {exercises.map((exercise, index) => (
+          <li key={index} className="text-sm">
+            <span className="font-medium">{exercise.name}</span>
+            {exercise.sets && exercise.reps && ` - ${exercise.sets} sets × ${exercise.reps} reps`}
+            {exercise.weight && ` @ ${exercise.weight} lbs`}
+          </li>
+        ))}
+      </ul>
     );
   };
 
+  // Custom calendar event styling
+  const eventStyleGetter = (event: any) => {
+    const workout: Workout = event.resource;
+    const isCompleted = workout.completed;
+    
+    let backgroundColor;
+    switch(workout.type) {
+      case 'cardio': backgroundColor = '#60a5fa'; break; // blue-400
+      case 'strength': backgroundColor = '#f87171'; break; // red-400
+      case 'flexibility': backgroundColor = '#c084fc'; break; // purple-400
+      case 'hiit': backgroundColor = '#fb923c'; break; // orange-400
+      case 'balance': backgroundColor = '#4ade80'; break; // green-400
+      case 'sport': backgroundColor = '#facc15'; break; // yellow-400
+      default: backgroundColor = '#94a3b8'; // gray-400
+    }
+    
+    return {
+      style: {
+        backgroundColor,
+        opacity: isCompleted ? 0.7 : 1,
+        borderRadius: '4px',
+        border: 'none',
+        color: 'white'
+      }
+    };
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-20 md:pb-0">
-      <div className="container mx-auto px-4 pt-6 animate-fade-in">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-              Workout Calendar
-            </h1>
-            <p className="text-muted-foreground">
-              View and schedule your workouts by date
-            </p>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2"
-              onClick={() => navigate('/workout-history')}
-            >
-              <List className="h-4 w-4" />
-              <span>List View</span>
-            </Button>
-            <Button 
-              className="bg-indigo-600 hover:bg-indigo-700"
-              onClick={() => setIsAddWorkoutOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Workout
-            </Button>
-          </div>
-        </header>
-        
-        <Card className="mb-6">
-          <CardContent className="py-4">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-sm font-medium">Legend:</span>
-              <div className="flex items-center">
-                <span className="inline-block w-3 h-3 rounded-full bg-green-200 dark:bg-green-900 mr-1"></span> 
-                <span className="text-xs">Completed</span>
-              </div>
-              <div className="flex items-center">
-                <span className="inline-block w-3 h-3 rounded-full bg-amber-200 dark:bg-amber-900 mr-1"></span> 
-                <span className="text-xs">Planned</span>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Click on a date to add a workout or click on an event to view details. Drag and drop events to reschedule.
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="h-[600px] mb-8">
-          <CardContent className="p-4 h-full">
-            {isLoading ? (
-              <div className="h-full flex items-center justify-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                <p className="ml-3">Loading calendar...</p>
-              </div>
-            ) : (
-              <div className="h-full calendar-container">
-                <Calendar
-                  localizer={localizer}
-                  events={events}
-                  startAccessor="start"
-                  endAccessor="end"
-                  style={{ height: '100%' }}
-                  views={['month', 'week', 'day']}
-                  defaultView="month"
-                  onSelectEvent={handleSelectEvent}
-                  onSelectSlot={handleSelectSlot}
-                  selectable
-                  components={{
-                    event: EventComponent
-                  }}
-                  eventPropGetter={(event) => {
-                    return {
-                      className: event.status === 'completed' ? 'completed-event' : 'planned-event'
-                    };
-                  }}
-                  className="bg-white dark:bg-gray-800 rounded-lg p-4"
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    <div className="container py-6 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Workout Calendar</h1>
+        <Button onClick={() => setIsAddWorkoutOpen(true)}>
+          Add Workout
+        </Button>
       </div>
       
-      {/* Add Workout Form */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 h-[700px]">
+        <Calendar
+          localizer={localizer}
+          events={calendarEvents}
+          startAccessor="start"
+          endAccessor="end"
+          onSelectEvent={handleSelectEvent}
+          onSelectSlot={handleSelectSlot}
+          selectable={true}
+          eventPropGetter={eventStyleGetter}
+          toolbar={true}
+          views={['month', 'week', 'agenda']}
+          defaultView="month"
+        />
+      </div>
+      
+      {/* Workout Details Dialog */}
+      <Dialog open={isWorkoutDetailsOpen} onOpenChange={setIsWorkoutDetailsOpen}>
+        <DialogContent className="max-w-md">
+          {selectedWorkout && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl">{selectedWorkout.title}</DialogTitle>
+                <DialogDescription className="flex items-center gap-2 mt-2">
+                  <span className="text-sm">
+                    {format(new Date(selectedWorkout.date), 'EEEE, MMMM d, yyyy')}
+                  </span>
+                  {renderWorkoutTypeBadge(selectedWorkout.type)}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid grid-cols-3 gap-4 py-4">
+                <div className="text-center">
+                  <div className="flex flex-col items-center">
+                    <Clock className="h-5 w-5 text-gray-500 mb-1" />
+                    <p className="text-sm text-muted-foreground">Duration</p>
+                    <p className="font-semibold">{selectedWorkout.duration} mins</p>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex flex-col items-center">
+                    <Flame className="h-5 w-5 text-orange-500 mb-1" />
+                    <p className="text-sm text-muted-foreground">Calories</p>
+                    <p className="font-semibold">{selectedWorkout.calories}</p>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex flex-col items-center">
+                    <Dumbbell className="h-5 w-5 text-blue-500 mb-1" />
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <p className="font-semibold">{selectedWorkout.completed ? 'Completed' : 'Planned'}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {selectedWorkout.notes && (
+                  <div>
+                    <h3 className="text-sm font-medium">Notes:</h3>
+                    <p className="text-sm text-gray-600">{selectedWorkout.notes}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Exercises:</h3>
+                  {formatExercises(selectedWorkout.exercises)}
+                </div>
+              </div>
+              
+              <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={() => setIsWorkoutDetailsOpen(false)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Add Workout Dialog */}
       <AddWorkoutForm
         open={isAddWorkoutOpen}
         onOpenChange={setIsAddWorkoutOpen}
         onSave={handleAddWorkout}
       />
-      
-      {/* Edit Workout Form */}
-      {selectedWorkout && (
-        <EditWorkoutForm
-          open={isEditWorkoutOpen}
-          onOpenChange={setIsEditWorkoutOpen}
-          workout={selectedWorkout}
-          onSave={handleEditSubmit}
-        />
-      )}
-      
-      {/* Workout Details Dialog */}
-      {selectedWorkout && (
-        <Dialog open={isWorkoutDetailsOpen} onOpenChange={setIsWorkoutDetailsOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="text-xl">{selectedWorkout.title}</DialogTitle>
-              <DialogDescription>
-                {format(parseISO(selectedWorkout.date), 'EEEE, MMMM d, yyyy')}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <div>
-                <p className="text-sm font-medium">Type</p>
-                <p className="capitalize">{selectedWorkout.type}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Duration</p>
-                <p>{selectedWorkout.duration} minutes</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Calories</p>
-                <p>{selectedWorkout.calories}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Exercises</p>
-                <p>{selectedWorkout.exercises}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm font-medium">Status</p>
-                <p>
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                    selectedWorkout.completed 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
-                  }`}>
-                    {selectedWorkout.completed ? 'Completed' : 'Planned'}
-                  </span>
-                </p>
-              </div>
-              {selectedWorkout.notes && (
-                <div className="col-span-2">
-                  <p className="text-sm font-medium">Notes</p>
-                  <p className="text-sm">{selectedWorkout.notes}</p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setIsWorkoutDetailsOpen(false)}>
-                Close
-              </Button>
-              <Button 
-                className="bg-indigo-600 hover:bg-indigo-700"
-                onClick={handleEditWorkout}
-              >
-                Edit Workout
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 };

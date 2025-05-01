@@ -26,10 +26,13 @@ export const useWorkouts = (days = 30) => {
 
   const addWorkout = async (workoutData: WorkoutFormData) => {
     try {
-      const newWorkout = await workoutService.addWorkout({
+      // Make sure we have a completed field or default to false
+      const workoutWithCompletion = {
         ...workoutData,
-        completed: false,
-      });
+        completed: workoutData.completed !== undefined ? workoutData.completed : false,
+      };
+      
+      const newWorkout = await workoutService.addWorkout(workoutWithCompletion);
       
       // Refresh workouts after adding
       await fetchWorkouts();

@@ -39,11 +39,12 @@ const workoutTypes = [
   { value: 'balance', label: 'Balance' },
   { value: 'sport', label: 'Sport' },
   { value: 'other', label: 'Other' },
+  { value: 'custom', label: 'Custom' },
 ];
 
 const EditWorkoutSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  type: z.enum(['strength', 'cardio', 'hiit', 'flexibility', 'balance', 'sport', 'other']),
+  type: z.enum(['strength', 'cardio', 'hiit', 'flexibility', 'balance', 'sport', 'other', 'custom']),
   duration: z.coerce.number().min(1, 'Duration must be at least 1 minute'),
   calories: z.coerce.number().min(0, 'Calories must be a positive number'),
   date: z.date(),
@@ -52,8 +53,15 @@ const EditWorkoutSchema = z.object({
   completed: z.boolean().default(false),
 });
 
+type EditWorkoutFormValues = z.infer<typeof EditWorkoutSchema>;
+
 const EditWorkoutForm: React.FC<EditWorkoutFormProps> = ({ workout, open, onOpenChange, onSave }) => {
-  const form = useForm<z.infer<typeof EditWorkoutSchema>>({
+  // Format workout exercises to string if it's an array
+  const exercisesValue = Array.isArray(workout.exercises) 
+    ? workout.exercises.map(e => e.name).join(", ") 
+    : workout.exercises || '';
+
+  const form = useForm<EditWorkoutFormValues>({
     resolver: zodResolver(EditWorkoutSchema),
     defaultValues: {
       title: workout.title,
@@ -61,16 +69,17 @@ const EditWorkoutForm: React.FC<EditWorkoutFormProps> = ({ workout, open, onOpen
       duration: workout.duration,
       calories: workout.calories,
       date: new Date(workout.date),
-      exercises: workout.exercises || '',
+      exercises: exercisesValue,
       notes: workout.notes || '',
       completed: workout.completed,
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof EditWorkoutSchema>) => {
+  const handleSubmit = (data: EditWorkoutFormValues) => {
     onSave({
       ...data,
       date: format(data.date, 'yyyy-MM-dd'),
+      type: data.type as WorkoutType,
     });
   };
 
