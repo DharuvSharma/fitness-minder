@@ -1,21 +1,21 @@
 
 import { useState, useEffect } from 'react';
 
-const MOBILE_BREAKPOINT = 768; // md breakpoint in Tailwind
-
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState<boolean>(
-    window.innerWidth < MOBILE_BREAKPOINT
-  );
+export const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
-    function handleResize() {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    }
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', checkMobile);
+    checkMobile();
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   return isMobile;
-}
+};

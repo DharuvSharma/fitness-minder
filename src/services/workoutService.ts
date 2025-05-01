@@ -1,6 +1,7 @@
 
 import apiClient from './apiClient';
 import { toast } from 'sonner';
+import { Workout, WorkoutFormData } from '@/types';
 
 /**
  * Service for managing workout data
@@ -9,7 +10,7 @@ export const workoutService = {
   /**
    * Get all workouts for the authenticated user
    */
-  getWorkouts: async () => {
+  getWorkouts: async (): Promise<Workout[]> => {
     try {
       const response = await apiClient.get('/workouts');
       return response.data;
@@ -22,7 +23,7 @@ export const workoutService = {
   /**
    * Get workouts within a specified date range
    */
-  getWorkoutsByDateRange: async (days: number) => {
+  getWorkoutsByDateRange: async (days: number): Promise<Workout[]> => {
     try {
       const response = await apiClient.get(`/workouts/range?days=${days}`);
       return response.data;
@@ -35,7 +36,7 @@ export const workoutService = {
   /**
    * Get a specific workout by ID
    */
-  getWorkoutById: async (id: string) => {
+  getWorkoutById: async (id: string): Promise<Workout> => {
     try {
       const response = await apiClient.get(`/workouts/${id}`);
       return response.data;
@@ -48,7 +49,7 @@ export const workoutService = {
   /**
    * Create a new workout
    */
-  createWorkout: async (workout: any) => {
+  createWorkout: async (workout: WorkoutFormData): Promise<Workout> => {
     try {
       const response = await apiClient.post('/workouts', workout);
       toast.success('Workout added successfully!');
@@ -62,7 +63,7 @@ export const workoutService = {
   /**
    * Update an existing workout
    */
-  updateWorkout: async (id: string, workout: any) => {
+  updateWorkout: async (id: string, workout: Partial<Workout>): Promise<Workout> => {
     try {
       const response = await apiClient.put(`/workouts/${id}`, workout);
       toast.success('Workout updated successfully!');
@@ -76,7 +77,7 @@ export const workoutService = {
   /**
    * Delete a workout
    */
-  deleteWorkout: async (id: string) => {
+  deleteWorkout: async (id: string): Promise<boolean> => {
     try {
       await apiClient.delete(`/workouts/${id}`);
       toast.success('Workout deleted successfully!');
@@ -90,7 +91,7 @@ export const workoutService = {
   /**
    * Toggle the completion status of a workout
    */
-  toggleWorkoutCompletion: async (id: string) => {
+  toggleWorkoutCompletion: async (id: string): Promise<Workout> => {
     try {
       const response = await apiClient.put(`/workouts/${id}/toggle-completion`);
       return response.data;
@@ -98,6 +99,13 @@ export const workoutService = {
       console.error('Error toggling workout completion:', error);
       throw error;
     }
+  },
+
+  /**
+   * Add a new workout (alias for createWorkout for compatibility)
+   */
+  addWorkout: async (workout: WorkoutFormData): Promise<Workout> => {
+    return workoutService.createWorkout(workout);
   }
 };
 

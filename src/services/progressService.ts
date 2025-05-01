@@ -1,6 +1,7 @@
 
 import apiClient from './apiClient';
 import { toast } from 'sonner';
+import { ProgressData } from '@/types';
 
 /**
  * Service for managing fitness progress data
@@ -9,7 +10,7 @@ export const progressService = {
   /**
    * Get progress data for a specific category
    */
-  getProgress: async (category: string = 'weight') => {
+  getProgress: async (category: string = 'weight'): Promise<ProgressData[]> => {
     try {
       const response = await apiClient.get(`/progress?category=${category}`);
       return response.data;
@@ -22,7 +23,7 @@ export const progressService = {
   /**
    * Add new progress data
    */
-  addProgressData: async (progressData: any) => {
+  addProgressData: async (progressData: Partial<ProgressData>): Promise<ProgressData> => {
     try {
       const response = await apiClient.post('/progress', progressData);
       toast.success('Progress data added successfully!');

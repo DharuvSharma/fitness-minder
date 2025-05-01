@@ -41,7 +41,10 @@ export const createApiClient = (baseConfig: AxiosRequestConfig = {}): AxiosInsta
       // Add auth token
       const token = getToken();
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`
+        };
       }
       
       return config;
@@ -103,7 +106,8 @@ export const createApiClient = (baseConfig: AxiosRequestConfig = {}): AxiosInsta
             toast.error('Server error. Please try again later.');
             break;
           default:
-            const message = error.response?.data?.message || 'Something went wrong';
+            const errorData = error.response.data as any;
+            const message = errorData?.message || 'Something went wrong';
             toast.error(message);
         }
       } catch (e) {

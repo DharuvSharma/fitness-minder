@@ -12,7 +12,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'medium',
   fullScreen = true 
 }) => {
-  const sizeClass = {
+  const sizeClasses = {
     small: 'h-6 w-6 border-2',
     medium: 'h-12 w-12 border-t-2 border-b-2',
     large: 'h-16 w-16 border-4'
@@ -24,7 +24,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   return (
     <div className={containerClass}>
-      <div className={`animate-spin rounded-full ${sizeClass[size]} border-primary`}></div>
+      <div className={`animate-spin rounded-full ${sizeClasses[size]} border-primary`}></div>
       {message && <p className="mt-4 text-muted-foreground">{message}</p>}
     </div>
   );
