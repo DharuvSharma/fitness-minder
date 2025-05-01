@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Dumbbell } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 // Define form validation schema with Zod
 const registerSchema = z.object({
@@ -24,7 +25,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
-  const { register } = useAuth();
+  const { register, isLoading } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -51,10 +52,15 @@ const Register = () => {
       navigate('/login');
     } catch (error) {
       console.error("Registration error:", error);
+      // Error handling is done in the register function
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return <LoadingSpinner message="Setting up..." />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4">

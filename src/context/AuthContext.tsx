@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { authApi } from '@/services/apiService';
+import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 
 interface User {
@@ -15,7 +15,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (userData: any) => Promise<void>;
+  register: (userData: { name: string, email: string, password: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -38,12 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkAuthStatus = async () => {
       setIsLoading(true);
       try {
-        const token = localStorage.getItem('fitness_token');
-        if (token) {
-          const currentUser = authApi.getCurrentUser();
-          if (currentUser) {
-            setUser(currentUser);
-          }
+        const currentUser = authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -58,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { user, token } = await authApi.login({ email, password });
+      const { user } = await authService.login({ email, password });
       setUser(user);
       toast.success(`Welcome back, ${user.name}!`);
     } catch (error) {
@@ -70,15 +67,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    authApi.logout();
+    authService.logout();
     setUser(null);
     toast.success('You have been logged out successfully');
   };
 
-  const register = async (userData: any) => {
+  const register = async (userData: { name: string, email: string, password: string }) => {
     setIsLoading(true);
     try {
-      await authApi.register(userData);
+      await authService.register(userData);
       toast.success('Registration successful! Please log in.');
       return Promise.resolve();
     } catch (error) {
