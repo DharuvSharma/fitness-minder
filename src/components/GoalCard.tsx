@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Circle, CheckCircle, XCircle, AlertCircle, Edit, Trash, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Goal, GoalStatus, GoalType } from '@/types';
 import { formatDistance } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 interface GoalCardProps {
   goal: Goal;
@@ -25,6 +27,9 @@ const GoalCard: React.FC<GoalCardProps> = ({
   onComplete,
   onProgressUpdate
 }) => {
+  const [showProgressDialog, setShowProgressDialog] = useState(false);
+  const [progressValue, setProgressValue] = useState(goal.current);
+
   // Status icons mapping
   const statusIcons: Record<GoalStatus, React.ReactNode> = {
     'completed': <CheckCircle className="h-5 w-5 text-green-500" />,
@@ -71,69 +76,108 @@ const GoalCard: React.FC<GoalCardProps> = ({
     if (onComplete) onComplete();
   };
   
-  const handleProgressUpdate = (value: any) => {
-    if (onProgressUpdate) onProgressUpdate(value);
+  const openProgressDialog = () => {
+    setProgressValue(goal.current);
+    setShowProgressDialog(true);
+  };
+
+  const handleProgressSubmit = async () => {
+    if (onProgressUpdate) {
+      await onProgressUpdate(progressValue);
+      setShowProgressDialog(false);
+    }
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <span className={`inline-block px-2 py-1 text-xs rounded-full ${typeColors[goal.type]}`}>
-              {typeEmojis[goal.type]} {goal.type.charAt(0).toUpperCase() + goal.type.slice(1)}
-            </span>
-            <CardTitle className="mt-2 text-lg">{goal.title}</CardTitle>
-            <CardDescription className="text-sm text-gray-500">
-              {goal.description || "No description provided"}
-            </CardDescription>
+    <>
+      <Card className="overflow-hidden transition-all hover:shadow-md">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <div>
+              <span className={`inline-block px-2 py-1 text-xs rounded-full ${typeColors[goal.type]}`}>
+                {typeEmojis[goal.type]} {goal.type.charAt(0).toUpperCase() + goal.type.slice(1)}
+              </span>
+              <CardTitle className="mt-2 text-lg">{goal.title}</CardTitle>
+              <CardDescription className="text-sm text-gray-500">
+                {goal.description || "No description provided"}
+              </CardDescription>
+            </div>
+            <div>{statusIcons[goal.status]}</div>
           </div>
-          <div>{statusIcons[goal.status]}</div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pb-2">
-        <div className="mb-4">
-          <div className="flex justify-between items-center text-sm mb-1">
-            <span>Progress</span>
-            <span className="font-medium">{goal.current} / {goal.target}</span>
-          </div>
-          <Progress value={goal.progress} className="h-2" />
-          <div className="text-right text-xs text-gray-500 mt-1">
-            {goal.progress}% complete
-          </div>
-        </div>
+        </CardHeader>
         
-        {timeToDeadline && (
-          <div className="text-sm text-gray-500">
-            {new Date(goal.deadline as string) < new Date() ? 
-              <span className="text-red-500">Deadline passed {timeToDeadline}</span> : 
-              <span>Due {timeToDeadline}</span>}
+        <CardContent className="pb-2">
+          <div className="mb-4">
+            <div className="flex justify-between items-center text-sm mb-1">
+              <span>Progress</span>
+              <span className="font-medium">{goal.current} / {goal.target}</span>
+            </div>
+            <Progress value={goal.progress} className="h-2" />
+            <div className="text-right text-xs text-gray-500 mt-1">
+              {goal.progress}% complete
+            </div>
           </div>
-        )}
-      </CardContent>
-      
-      <CardFooter className="flex justify-between pt-2">
-        <div className="flex space-x-2">
-          {onEdit && (
-            <Button variant="outline" size="sm" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-1" /> Edit
+          
+          {timeToDeadline && (
+            <div className="text-sm text-gray-500">
+              {new Date(goal.deadline as string) < new Date() ? 
+                <span className="text-red-500">Deadline passed {timeToDeadline}</span> : 
+                <span>Due {timeToDeadline}</span>}
+            </div>
+          )}
+        </CardContent>
+        
+        <CardFooter className="flex justify-between pt-2">
+          <div className="flex space-x-2">
+            {onEdit && (
+              <Button variant="outline" size="sm" onClick={handleEdit}>
+                <Edit className="h-4 w-4 mr-1" /> Edit
+              </Button>
+            )}
+            {onDelete && (
+              <Button variant="outline" size="sm" className="text-red-500" onClick={handleDelete}>
+                <Trash className="h-4 w-4 mr-1" /> Delete
+              </Button>
+            )}
+          </div>
+          
+          {(onToggleStatus || onComplete || onProgressUpdate) && (
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-blue-500" 
+              onClick={onProgressUpdate ? openProgressDialog : handleStatusToggle}
+            >
+              Update <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           )}
-          {onDelete && (
-            <Button variant="outline" size="sm" className="text-red-500" onClick={handleDelete}>
-              <Trash className="h-4 w-4 mr-1" /> Delete
-            </Button>
-          )}
-        </div>
-        
-        {(onToggleStatus || onComplete || onProgressUpdate) && (
-          <Button size="sm" variant="ghost" className="text-blue-500" onClick={handleStatusToggle}>
-            Update <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+
+      <Dialog open={showProgressDialog} onOpenChange={setShowProgressDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Progress for {goal.title}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium mb-2">
+              Current Progress ({goal.current} / {goal.target})
+            </label>
+            <Input 
+              type="number" 
+              value={progressValue}
+              onChange={(e) => setProgressValue(Number(e.target.value))}
+              min={0}
+              max={goal.target}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProgressDialog(false)}>Cancel</Button>
+            <Button onClick={handleProgressSubmit}>Save Progress</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

@@ -1,12 +1,13 @@
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { authService } from '@/services/authService';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import authService from '@/services/authService';
 import { toast } from 'sonner';
 
 interface User {
   id: string;
   name: string;
   email: string;
+  [key: string]: any; // Allow for additional properties
 }
 
 interface AuthContextType {
@@ -14,8 +15,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (data: any) => Promise<void>;
   logout: () => void;
-  register: (userData: { name: string, email: string, password: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -23,27 +24,34 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => {},
-  logout: () => {},
   register: async () => {},
+  logout: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Check if the user is already authenticated on component mount
   useEffect(() => {
-    // Check if user is already logged in on mount
     const checkAuthStatus = async () => {
-      setIsLoading(true);
       try {
+        setIsLoading(true);
         const currentUser = authService.getCurrentUser();
+        
         if (currentUser) {
           setUser(currentUser);
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
+        // Clear invalid auth data
+        authService.logout();
       } finally {
         setIsLoading(false);
       }
@@ -58,9 +66,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { user } = await authService.login({ email, password });
       setUser(user);
       toast.success(`Welcome back, ${user.name}!`);
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Login failed. Please check your credentials.');
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || 'Login failed. Please check your credentials.';
+      toast.error(errorMsg);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (data: any) => {
+    setIsLoading(true);
+    try {
+      await authService.register(data);
+      toast.success('Registration successful! Please log in.');
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || 'Registration failed. Please try again.';
+      toast.error(errorMsg);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -69,36 +92,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     authService.logout();
     setUser(null);
-    toast.success('You have been logged out successfully');
   };
 
-  const register = async (userData: { name: string, email: string, password: string }) => {
-    setIsLoading(true);
-    try {
-      await authService.register(userData);
-      toast.success('Registration successful! Please log in.');
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Registration error:', error);
-      toast.error('Registration failed. Please try again.');
-      return Promise.reject(error);
-    } finally {
-      setIsLoading(false);
-    }
+  const value = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    register,
+    logout
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        register,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;

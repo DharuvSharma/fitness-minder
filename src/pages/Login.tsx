@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -22,6 +22,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [formError, setFormError] = useState<string | null>(null);
+  
+  // Get the intended destination from the location state, or default to dashboard
+  const from = location.state?.from?.pathname || '/dashboard';
   
   // Initialize form with react-hook-form
   const form = useForm<LoginFormValues>({
@@ -34,12 +39,13 @@ const Login = () => {
 
   // Form submission handler
   const onSubmit = async (values: LoginFormValues) => {
+    setFormError(null);
     try {
       await login(values.email, values.password);
-      navigate('/dashboard');
+      navigate(from, { replace: true });
     } catch (error) {
       console.error("Login error:", error);
-      // Error is handled by the login function
+      setFormError("Login failed. Please check your credentials and try again.");
     }
   };
 
@@ -66,6 +72,13 @@ const Login = () => {
               </p>
             </div>
           </div>
+
+          {/* Show error message if login failed */}
+          {formError && (
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md mb-4 text-sm">
+              {formError}
+            </div>
+          )}
 
           {/* Login Form */}
           <Form {...form}>
