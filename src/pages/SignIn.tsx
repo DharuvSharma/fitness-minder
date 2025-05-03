@@ -1,11 +1,10 @@
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import Login from './Login';
 
 const SignIn = () => {
   // Redirects to the Login component
-  return <Login />;
+  return <Navigate to="/login" replace />;
 };
 
 export default SignIn;
