@@ -121,7 +121,7 @@ const Goals = () => {
           {goals.map((goal) => (
             <GoalCard
               key={goal.id}
-              {...goal}
+              goal={goal}
               onComplete={() => handleCompleteGoal(goal.id)}
               onDelete={() => handleDeleteGoal(goal.id)}
               onProgressUpdate={(value) => handleGoalProgressUpdate(goal.id, value)}

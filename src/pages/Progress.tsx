@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import ProgressChart, { ProgressDataPoint } from '@/components/ProgressChart';
@@ -246,15 +247,7 @@ const Progress: React.FC = () => {
                   {goals.map(goal => (
                     <GoalCard 
                       key={goal.id}
-                      id={goal.id}
-                      title={goal.title}
-                      description={goal.description}
-                      target={goal.target}
-                      current={goal.current}
-                      type={goal.type}
-                      status={goal.status}
-                      progress={goal.progress}
-                      deadline={goal.deadline}
+                      goal={goal}
                       onComplete={() => handleCompleteGoal(goal.id)}
                       onDelete={() => handleDeleteGoal(goal.id)}
                       onProgressUpdate={(value) => handleProgressUpdate(goal.id, value)}

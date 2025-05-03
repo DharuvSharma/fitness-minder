@@ -12,9 +12,9 @@ interface GoalCardProps {
   onEdit?: (goal: Goal) => void;
   onDelete?: (goalId: string) => void;
   onToggleStatus?: (goal: Goal) => void;
-  onComplete?: () => Promise<void>;  // Added for Goals.tsx
-  onProgressUpdate?: (value: any) => Promise<void>;  // Added for Progress.tsx
-  id?: string;  // Added to match what's passed in Progress.tsx
+  onComplete?: () => Promise<void>;
+  onProgressUpdate?: (value: any) => Promise<void>;
+  id?: string;
 }
 
 const GoalCard: React.FC<GoalCardProps> = ({ 
