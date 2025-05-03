@@ -1,5 +1,4 @@
-
-import api from './apiService';
+import apiClient from './apiClient';
 import { toast } from 'sonner';
 
 export interface Quote {
@@ -29,7 +28,7 @@ export const quoteService = {
       }
       
       // Otherwise fetch a new quote
-      const response = await api.get('/quotes/random');
+      const response = await apiClient.get('/quotes/random');
       const quote = response.data;
       
       // Cache the quote
@@ -63,7 +62,7 @@ export const quoteService = {
   // Get a health tip
   getHealthTip: async (): Promise<string | null> => {
     try {
-      const response = await api.get('/health-tips/random');
+      const response = await apiClient.get('/health-tips/random');
       return response.data.tip;
     } catch (error) {
       console.error('Error fetching health tip:', error);

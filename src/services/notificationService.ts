@@ -1,6 +1,5 @@
-
 import { toast } from 'sonner';
-import api from './apiService';
+import apiClient from './apiClient';
 
 // Types for notifications
 export type NotificationType = 'workout' | 'goal' | 'streak' | 'system';
@@ -21,7 +20,7 @@ export const notificationService = {
   // Get all notifications for the current user
   getNotifications: async (): Promise<Notification[]> => {
     try {
-      const response = await api.get('/notifications');
+      const response = await apiClient.get('/notifications');
       return response.data;
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -34,7 +33,7 @@ export const notificationService = {
   // Mark a notification as read
   markAsRead: async (id: string): Promise<boolean> => {
     try {
-      await api.put(`/notifications/${id}/read`);
+      await apiClient.put(`/notifications/${id}/read`);
       return true;
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -45,7 +44,7 @@ export const notificationService = {
   // Mark all notifications as read
   markAllAsRead: async (): Promise<boolean> => {
     try {
-      await api.put('/notifications/read-all');
+      await apiClient.put('/notifications/read-all');
       return true;
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -56,7 +55,7 @@ export const notificationService = {
   // Delete a notification
   deleteNotification: async (id: string): Promise<boolean> => {
     try {
-      await api.delete(`/notifications/${id}`);
+      await apiClient.delete(`/notifications/${id}`);
       return true;
     } catch (error) {
       console.error('Error deleting notification:', error);
@@ -72,7 +71,7 @@ export const notificationService = {
     days?: string[]
   }): Promise<boolean> => {
     try {
-      await api.post('/notifications/workout-reminders', preferences);
+      await apiClient.post('/notifications/workout-reminders', preferences);
       toast.success('Workout reminder preferences updated');
       return true;
     } catch (error) {
@@ -85,7 +84,7 @@ export const notificationService = {
   // Subscribe to goal updates
   subscribeToGoalUpdates: async (enabled: boolean): Promise<boolean> => {
     try {
-      await api.post('/notifications/goal-updates', { enabled });
+      await apiClient.post('/notifications/goal-updates', { enabled });
       toast.success('Goal notification preferences updated');
       return true;
     } catch (error) {
