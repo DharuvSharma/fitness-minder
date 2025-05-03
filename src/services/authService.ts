@@ -45,10 +45,9 @@ export const authService = {
   /**
    * Register a new user
    */
-  register: async (userData: RegisterData) => {
+  register: async (userData: RegisterData): Promise<any> => {
     try {
       const response = await apiClient.post('/auth/register', userData);
-      toast.success('Registration successful! Please log in.');
       return response.data;
     } catch (error) {
       console.error('Registration failed:', error);
@@ -61,7 +60,6 @@ export const authService = {
    */
   logout: () => {
     clearAuthData();
-    toast.success('You have been logged out successfully');
   },
   
   /**

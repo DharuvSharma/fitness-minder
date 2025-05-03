@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Dumbbell } from 'lucide-react';
+import { Dumbbell, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -25,7 +25,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
-  const { register, isLoading } = useAuth();
+  const { register: registerUser, isLoading } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -44,7 +44,7 @@ const Register = () => {
   const onSubmit = async (values: RegisterFormValues) => {
     setIsSubmitting(true);
     try {
-      await register({
+      await registerUser({
         name: values.name,
         email: values.email,
         password: values.password,
@@ -96,6 +96,7 @@ const Register = () => {
                         placeholder="Enter your name" 
                         {...field} 
                         className="h-11"
+                        autoComplete="name"
                       />
                     </FormControl>
                     <FormMessage />
@@ -115,6 +116,7 @@ const Register = () => {
                         type="email" 
                         {...field} 
                         className="h-11"
+                        autoComplete="email"
                       />
                     </FormControl>
                     <FormMessage />
@@ -134,6 +136,7 @@ const Register = () => {
                         type="password" 
                         {...field} 
                         className="h-11"
+                        autoComplete="new-password"
                       />
                     </FormControl>
                     <FormMessage />
@@ -153,6 +156,7 @@ const Register = () => {
                         type="password" 
                         {...field} 
                         className="h-11"
+                        autoComplete="new-password"
                       />
                     </FormControl>
                     <FormMessage />
@@ -168,6 +172,12 @@ const Register = () => {
                 >
                   {isSubmitting ? "Creating Account..." : "Create Account"}
                 </Button>
+              </div>
+              
+              <div className="flex justify-center pt-2">
+                <Link to="/login" className="flex items-center text-sm text-[#61DAFB] hover:underline">
+                  <ArrowLeft className="w-4 h-4 mr-1" /> Back to Login
+                </Link>
               </div>
             </form>
           </Form>

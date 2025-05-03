@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService from '@/services/authService';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -78,8 +79,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (data: any) => {
     setIsLoading(true);
     try {
-      await authService.register(data);
+      const result = await authService.register(data);
       toast.success('Registration successful! Please log in.');
+      return result;
     } catch (error: any) {
       const errorMsg = error?.response?.data?.message || 'Registration failed. Please try again.';
       toast.error(errorMsg);
@@ -92,6 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     authService.logout();
     setUser(null);
+    toast.success('You have been logged out successfully');
   };
 
   const value = {

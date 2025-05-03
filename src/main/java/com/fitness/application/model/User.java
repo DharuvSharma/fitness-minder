@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 
 /**
  * User entity model.
- * Simplified version without authentication fields.
  */
 @Data
 @Builder
@@ -27,4 +26,6 @@ public class User {
     
     @Indexed(unique = true)
     private String email;
+    
+    private String password;
 }
