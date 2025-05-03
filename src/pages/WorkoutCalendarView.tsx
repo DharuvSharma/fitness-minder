@@ -1,18 +1,17 @@
-
 import React, { useState } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
-import enUS from 'date-fns/locale/en-US';
+import { enUS } from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { Workout, Exercise } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AddWorkoutForm from '@/components/AddWorkoutForm';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Dumbbell, Clock, Flame, Check, Info } from 'lucide-react';
+import { Dumbbell, Clock, Flame, Check, Activity } from 'lucide-react';
 
 const locales = {
   'en-US': enUS,

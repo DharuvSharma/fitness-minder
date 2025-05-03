@@ -12,9 +12,19 @@ interface GoalCardProps {
   onEdit?: (goal: Goal) => void;
   onDelete?: (goalId: string) => void;
   onToggleStatus?: (goal: Goal) => void;
+  onComplete?: () => Promise<void>;  // Added for Goals.tsx
+  onProgressUpdate?: (value: any) => Promise<void>;  // Added for Progress.tsx
+  id?: string;  // Added to match what's passed in Progress.tsx
 }
 
-const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onToggleStatus }) => {
+const GoalCard: React.FC<GoalCardProps> = ({ 
+  goal, 
+  onEdit, 
+  onDelete, 
+  onToggleStatus,
+  onComplete,
+  onProgressUpdate
+}) => {
   // Status icons mapping
   const statusIcons: Record<GoalStatus, React.ReactNode> = {
     'completed': <CheckCircle className="h-5 w-5 text-green-500" />,
@@ -56,7 +66,14 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onToggleSta
   
   const handleEdit = () => onEdit && onEdit(goal);
   const handleDelete = () => onDelete && onDelete(goal.id);
-  const handleStatusToggle = () => onToggleStatus && onToggleStatus(goal);
+  const handleStatusToggle = () => {
+    if (onToggleStatus) onToggleStatus(goal);
+    if (onComplete) onComplete();
+  };
+  
+  const handleProgressUpdate = (value: any) => {
+    if (onProgressUpdate) onProgressUpdate(value);
+  };
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
@@ -110,7 +127,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onToggleSta
           )}
         </div>
         
-        {onToggleStatus && (
+        {(onToggleStatus || onComplete || onProgressUpdate) && (
           <Button size="sm" variant="ghost" className="text-blue-500" onClick={handleStatusToggle}>
             Update <ChevronRight className="h-4 w-4 ml-1" />
           </Button>

@@ -9,7 +9,7 @@ export interface Workout {
   notes?: string;
   date: string;
   completed: boolean;
-  exercises?: Exercise[];
+  exercises?: Exercise[] | string; // Updated to allow string
 }
 
 export type WorkoutType = 'cardio' | 'strength' | 'flexibility' | 'hiit' | 'custom' | 'balance' | 'sport' | 'other';
@@ -33,6 +33,6 @@ export interface WorkoutFormData {
   calories: number;
   notes?: string;
   date: string;
-  exercises?: Exercise[] | string;
+  exercises?: Exercise[] | string; // Updated to allow string
   completed?: boolean;
 }

@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { format } from 'date-fns';
-import { Dumbbell, Calendar, Clock, Flame, Check, MoreVertical, Running, Yoga, Users, Activity } from 'lucide-react';
+import { Dumbbell, Calendar, Clock, Flame, Check, MoreVertical, Users, Activity } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -29,11 +28,11 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
   const renderWorkoutTypeIcon = (type: WorkoutType) => {
     switch (type) {
       case 'cardio':
-        return <Running className="h-4 w-4" />;
+        return <Activity className="h-4 w-4" />;
       case 'strength':
         return <Dumbbell className="h-4 w-4" />;
       case 'flexibility':
-        return <Yoga className="h-4 w-4" />;
+        return <Activity className="h-4 w-4" />;
       case 'hiit':
         return <Activity className="h-4 w-4" />;
       case 'balance':
