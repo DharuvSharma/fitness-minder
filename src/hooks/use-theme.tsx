@@ -11,7 +11,15 @@ interface ThemeState {
 
 export const useTheme = (): ThemeState => {
   try {
-    return useNextTheme();
+    // Get the theme from next-themes
+    const nextTheme = useNextTheme();
+    
+    // Ensure theme is never undefined by using a fallback
+    return {
+      ...nextTheme,
+      theme: nextTheme.theme || 'system',
+      themes: nextTheme.themes || ['light', 'dark', 'system']
+    } as ThemeState;
   } catch (error) {
     console.error("Error using theme:", error);
     // Return fallback theme state to prevent the app from crashing
