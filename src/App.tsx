@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/sonner';
@@ -22,6 +22,7 @@ import WorkoutCalendarView from './pages/WorkoutCalendarView';
 import Progress from './pages/Progress';
 import Goals from './pages/Goals';
 import Profile from './pages/Profile';
+import NotFound from './pages/NotFound';
 
 // Additional pages
 const About = () => (
@@ -78,17 +79,11 @@ const Settings = () => (
   </div>
 );
 
-const NotFound = () => (
-  <div className="flex flex-col items-center justify-center h-screen">
-    <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-    <p className="mb-8">The page you're looking for doesn't exist.</p>
-    <a href="/" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-      Go Home
-    </a>
-  </div>
-);
-
 function App() {
+  useEffect(() => {
+    console.log("App component mounted");
+  }, []);
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="fitness-theme">
       <AuthProvider>
